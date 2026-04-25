@@ -1,0 +1,1893 @@
+================================================================
+GIT MIDTERM PRACTICE QUESTIONS
+Based on: Version Control & Git Foundations, Branching/Merging/Conflicts,
+GitLab Workflow/History/Undoing/Remotes, Remote Branching/Workflows/Versioning
+================================================================
+
+----------------------------------------------------------------
+SECTION 1: VERSION CONTROL & GIT FOUNDATIONS
+----------------------------------------------------------------
+
+Q1. What is the primary purpose of a Version Control System?
+Single Choice
+A. To compile source code faster
+B. To track changes, enable rollback, support parallel work, and provide accountability
+C. To replace cloud storage services
+D. To automatically fix bugs in code
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q2. Which of the following are true about Distributed Version Control Systems like Git?
+Multiple Select
+A. Every clone contains the full project history
+B. They require constant internet connection to work
+C. They support offline work
+D. There is no single point of failure
+
+Answer: A, C, D
+
+----------------------------------------------------------------
+
+Q3. Who created Git and in what year?
+Single Choice
+A. Linus Torvalds in 2005
+B. Linus Torvalds in 1991
+C. Richard Stallman in 2005
+D. Linus Torvalds in 2010
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q4. Git stores data as snapshots rather than line-by-line differences (diffs).
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q5. Which hashing algorithm does Git use to identify objects?
+Single Choice
+A. MD5
+B. SHA-256
+C. SHA-1
+D. CRC32
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q6. What are the three core areas of Git?
+Multiple Select
+A. Working Directory
+B. Staging Area
+C. Local Repository
+D. Remote Repository
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q7. What does a Git commit contain?
+Multiple Select
+A. Author name and email
+B. Timestamp
+C. Commit message
+D. Reference to parent commit(s)
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q8. What happens if you delete the .git/ directory?
+Single Choice
+A. Nothing, it's just a cache
+B. Only the working files are deleted
+C. All Git history is lost, but working files remain
+D. The entire project including files is deleted
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q9. Which command initializes a new Git repository?
+Single Choice
+A. git start
+B. git init
+C. git create
+D. git new
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q10. Which command is used to configure your name globally in Git?
+Single Choice
+A. git set user.name "Your Name"
+B. git config --global user.name "Your Name"
+C. git user --name "Your Name"
+D. git init --user "Your Name"
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q11. Which command shows which files are modified, staged, or untracked?
+Single Choice
+A. git log
+B. git show
+C. git status
+D. git diff
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q12. Which of these are good commit habits?
+Multiple Select
+A. Commit small, logical changes
+B. Write meaningful commit messages
+C. Commit passwords and API keys for backup
+D. Run git status before every commit
+
+Answer: A, B, D
+
+----------------------------------------------------------------
+
+Q13. What is the typical daily flow in Git?
+Single Choice
+A. Commit -> Stage -> Modify
+B. Modify working directory -> Stage changes -> Commit to local repository
+C. Push -> Pull -> Commit
+D. Clone -> Delete -> Recreate
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q14. Git is better understood as a content-addressable database than a change tracker.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q15. Which command displays the commit history in a compact format?
+Single Choice
+A. git history
+B. git log --oneline
+C. git show --all
+D. git commits
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q16. What does the industry standard default branch name used to be, and what is it now?
+Single Choice
+A. Previously "main", now "master"
+B. Previously "master", now "main"
+C. Previously "trunk", now "main"
+D. Previously "dev", now "master"
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q17. Which commands can you use to get help in Git?
+Multiple Select
+A. git help
+B. git help <command>
+C. git <command> -h
+D. git --assist
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q18. Which three architectural models has version control evolved through?
+Multiple Select
+A. Local VCS
+B. Centralized VCS
+C. Distributed VCS
+D. Cloud VCS
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q19. In Git, if two files have identical content, they share one object.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q20. Which command stages all changes in the current directory?
+Single Choice
+A. git stage all
+B. git add .
+C. git commit -a
+D. git push all
+
+Answer: B
+
+----------------------------------------------------------------
+SECTION 2: BRANCHING, MERGING, AND CONFLICTS
+----------------------------------------------------------------
+
+Q21. In Git, a branch is essentially:
+Single Choice
+A. A complete copy of the entire repository
+B. A lightweight pointer to a specific commit
+C. A separate folder on your disk
+D. A backup of the main branch
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q22. What is Git's history actually structured as?
+Single Choice
+A. A linear list of commits
+B. A directed acyclic graph (DAG) of commits
+C. A binary tree
+D. A hash table
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q23. Why do branches exist in Git?
+Multiple Select
+A. Enable parallel work by multiple developers
+B. Isolate risky experiments from production code
+C. Enable code review and CI workflows
+D. Make the repository size smaller
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q24. What is the key difference between branches and tags?
+Single Choice
+A. Branches are permanent; tags are temporary
+B. Branches are movable pointers; tags are fixed/immutable pointers
+C. Branches work offline; tags require internet
+D. There is no difference
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q25. A fast-forward merge occurs when:
+Single Choice
+A. Both branches have diverged with new commits
+B. The target branch hasn't moved since the feature branch was created
+C. There are conflicts to resolve
+D. You use the --force flag
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q26. When does a merge commit get created (instead of fast-forward)?
+Single Choice
+A. When only one branch has new commits
+B. When both branches have new commits that have diverged
+C. Never, Git always fast-forwards
+D. Only when you specify --no-ff
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q27. A merge conflict occurs when:
+Single Choice
+A. There is a bug in Git's setup
+B. Two branches modify the same lines in the same file in different ways
+C. You try to merge branches with different names
+D. The remote server is down
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q28. What is the correct order of the conflict resolution workflow?
+Single Choice
+A. Commit -> Stage -> Edit -> Identify
+B. Identify -> Edit -> Stage -> Commit
+C. Edit -> Commit -> Stage -> Identify
+D. Stage -> Edit -> Identify -> Commit
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q29. Which practices help avoid merge conflicts?
+Multiple Select
+A. Keep branches short-lived
+B. Merge or rebase often to pull changes from main
+C. Make small, focused commits
+D. Agree on code ownership for shared files
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q30. What is the default merge strategy Git uses for two-branch merges?
+Single Choice
+A. octopus
+B. resolve
+C. recursive (3-way merge)
+D. ours
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q31. In a 3-way merge, which three reference points does Git use?
+Multiple Select
+A. Base (common ancestor)
+B. Ours (current branch)
+C. Theirs (incoming branch)
+D. HEAD~1
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q32. The 'octopus' merge strategy is best used for:
+Single Choice
+A. Merging two conflicting branches
+B. Merging three or more non-overlapping branches at once
+C. Discarding incoming changes
+D. Integrating external projects
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q33. What does the 'ours' merge strategy do?
+Single Choice
+A. Keeps only the incoming branch's content
+B. Records the merge but keeps only your branch's content, discarding incoming changes
+C. Automatically resolves all conflicts using your version
+D. Creates a 3-way merge
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q34. The 'subtree' merge strategy is primarily used for:
+Single Choice
+A. Merging feature branches
+B. Embedding an external project into a subdirectory of your repo
+C. Resolving conflicts automatically
+D. Creating release branches
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q35. When merging a feature branch into main, which direction is correct?
+Single Choice
+A. Checkout feature-branch, then run: git merge main
+B. Checkout main, then run: git merge feature-branch
+C. Both directions are equivalent
+D. Direction doesn't matter
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q36. Only tag a commit you would be happy to ship to production.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q37. Which branching strategies are suitable for smaller teams?
+Multiple Select
+A. Main-only workflow
+B. GitHub Flow
+C. Complex Gitflow with multiple release branches
+D. Release Branching
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q38. A merge conflict is a bug in Git that needs to be reported.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE)
+
+----------------------------------------------------------------
+
+Q39. Which factors should influence your choice of branching strategy?
+Multiple Select
+A. Team size and experience level
+B. Project complexity
+C. Deployment frequency and CI/CD maturity
+D. The color scheme of your IDE
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q40. The 'octopus' strategy will proceed even if some branches have conflicts.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - it refuses to run if any conflicts would occur)
+
+----------------------------------------------------------------
+SECTION 3: GITLAB WORKFLOW, HISTORY, UNDOING & REMOTES
+----------------------------------------------------------------
+
+Q41. What is the key difference between git init and git clone?
+Single Choice
+A. init is for new local repos; clone downloads existing repos and auto-configures origin
+B. They do the same thing
+C. clone is for local, init is for remote
+D. init requires internet, clone works offline
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q42. What is 'origin' in Git?
+Single Choice
+A. A special Git keyword that cannot be changed
+B. The conventional name for the primary remote (can be renamed)
+C. The name of your local main branch
+D. The original author of the repository
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q43. Which flags does the command 'git log --oneline --decorate --graph --all' include?
+Multiple Select
+A. --oneline: one line per commit
+B. --decorate: shows branch and tag labels
+C. --graph: draws ASCII branch tree
+D. --all: includes all branches, not just current
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q44. Which command shows the full patch (all changes) introduced by a single commit?
+Single Choice
+A. git log <hash>
+B. git show <hash>
+C. git diff <hash>
+D. git commit <hash>
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q45. What does 'git log --stat' display?
+Single Choice
+A. Only the commit messages
+B. A summary of which files changed and how many lines were added/deleted
+C. The full diff of every commit
+D. Statistical analysis of authors
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q46. Which command compares your working tree against what is staged?
+Single Choice
+A. git compare
+B. git diff
+C. git show
+D. git status --verbose
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q47. What does 'git diff origin/main..HEAD' show?
+Single Choice
+A. Differences between two random commits
+B. Everything your local branch has that the remote doesn't yet
+C. The remote's additional commits
+D. Only merge conflicts
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q48. Which flags help filter git log output?
+Multiple Select
+A. --author="Name"
+B. --since="2026-01-01"
+C. -- path/to/file
+D. -S "search text"
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q49. The -S flag in git log is known as the "pickaxe" and finds commits that:
+Single Choice
+A. Deleted any file
+B. Added or removed a specific string of code
+C. Were signed with GPG
+D. Were made by specific authors
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q50. Before running any undo operation, which two questions should you ask?
+Multiple Select
+A. Is it pushed to a remote?
+B. Where is the mistake (working tree, staging, local commit, remote commit)?
+C. What color is my terminal?
+D. How many commits are there total?
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q51. Which command discards uncommitted changes in a specific file?
+Single Choice
+A. git delete <file>
+B. git restore <file>
+C. git remove <file>
+D. git undo <file>
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q52. 'git restore .' is an irreversible operation.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q53. Which command moves a staged file back to the working tree (unstages it)?
+Single Choice
+A. git unstage <file>
+B. git reset <file>
+C. git restore --staged <file>
+D. git remove --cached <file>
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q54. What does 'git commit --amend' do?
+Single Choice
+A. Creates a new commit on top of the current one
+B. Rewrites the most recent commit in place (no new commit created)
+C. Deletes the last commit
+D. Pushes the commit to remote
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q55. You should only use 'git commit --amend' on commits that:
+Single Choice
+A. Have been pushed to the remote
+B. Have NOT yet been pushed to the remote
+C. Are older than 24 hours
+D. Have specific authors
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q56. What are the three modes of 'git reset'?
+Multiple Select
+A. --soft
+B. --mixed
+C. --hard
+D. --heavy
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q57. Which git reset mode keeps changes staged?
+Single Choice
+A. --soft
+B. --mixed
+C. --hard
+D. --default
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q58. Which git reset mode permanently deletes changes in staging AND working tree?
+Single Choice
+A. --soft
+B. --mixed
+C. --hard
+D. --safe
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q59. Which git reset mode is the default, unstaging changes but keeping them in working tree?
+Single Choice
+A. --soft
+B. --mixed
+C. --hard
+D. --default
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q60. What does 'git revert <hash>' do?
+Single Choice
+A. Permanently deletes the commit from history
+B. Creates a brand-new commit that applies the inverse of the specified commit
+C. Resets the branch to before the commit
+D. Moves the commit to a different branch
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q61. Which is safer for undoing commits that have been pushed to a shared remote?
+Single Choice
+A. git reset --hard
+B. git revert
+C. git commit --amend
+D. git restore
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q62. What is 'git reflog' used for?
+Single Choice
+A. Viewing commit messages
+B. Recovering lost commits by showing every position HEAD has pointed to
+C. Displaying remote branches
+D. Listing all authors
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q63. By default, how long does Git keep reflog entries?
+Single Choice
+A. 7 days
+B. 30 days
+C. 90 days
+D. Forever
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q64. What does the '-u' flag do in 'git push -u origin main'?
+Single Choice
+A. Updates the repository
+B. Sets upstream tracking between local and remote branches
+C. Uploads all files
+D. Uses SSH instead of HTTPS
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q65. Which command verifies branch tracking relationships?
+Single Choice
+A. git remote -v
+B. git branch -vv
+C. git status --upstream
+D. git track --list
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q66. What is the key difference between git fetch and git pull?
+Single Choice
+A. fetch only downloads changes; pull downloads AND integrates (merge or rebase)
+B. pull is faster than fetch
+C. fetch requires authentication; pull doesn't
+D. They are identical
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q67. Which is considered the more professional/cautious approach?
+Single Choice
+A. Always use git pull
+B. Use git fetch first, inspect changes, then integrate deliberately
+C. Only use git push
+D. Avoid remotes entirely
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q68. Which characteristics describe git merge?
+Multiple Select
+A. Non-destructive
+B. Creates a merge commit
+C. Preserves full history
+D. Rewrites commit hashes
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q69. Which characteristics describe git rebase?
+Multiple Select
+A. Rewrites history
+B. Creates linear history
+C. Results in altered commit hashes
+D. Always creates merge commits
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q70. What is the Golden Rule of rebasing?
+Single Choice
+A. Never rebase commits that have been pushed to a shared remote
+B. Always rebase before every commit
+C. Only rebase on Fridays
+D. Rebase requires admin privileges
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q71. Which command makes 'git pull' always rebase by default?
+Single Choice
+A. git config --global pull.rebase true
+B. git config --global pull.merge false
+C. git set rebase always
+D. git pull --always-rebase
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q72. What are the two types of tags in Git?
+Multiple Select
+A. Lightweight tags
+B. Annotated tags
+C. Heavy tags
+D. Compressed tags
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q73. Which tag type is recommended for official releases and stores metadata?
+Single Choice
+A. Lightweight tags
+B. Annotated tags
+C. Quick tags
+D. Basic tags
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q74. Which command creates an annotated tag?
+Single Choice
+A. git tag v1.0
+B. git tag -a v1.0 -m "Release message"
+C. git tag --light v1.0
+D. git create-tag v1.0
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q75. Tags are automatically pushed when you run 'git push'.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - you must use 'git push origin --tags')
+
+----------------------------------------------------------------
+
+Q76. What is a Git alias?
+Single Choice
+A. An encrypted version of Git
+B. A shortcut you define to represent a longer Git command
+C. An alternative name for your Git account
+D. A backup of your repository
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q77. Which command creates a global Git alias?
+Single Choice
+A. git alias add co checkout
+B. git config --global alias.co 'checkout'
+C. git create-alias co=checkout
+D. alias git-co='git checkout'
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q78. Where are global Git aliases typically stored?
+Single Choice
+A. ~/.gitaliases
+B. ~/.gitconfig
+C. /etc/git/config
+D. ./git/aliases.txt
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q79. What is a "detached HEAD" state?
+Single Choice
+A. When Git is corrupted
+B. When HEAD points directly to a commit rather than a branch
+C. When you delete the main branch
+D. When you lose internet connection
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q80. What is the risk of committing in a detached HEAD state?
+Single Choice
+A. None, it's completely safe
+B. Your commits don't belong to any branch and can become orphaned when you switch branches
+C. Your hard drive might get corrupted
+D. The repository becomes public
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q81. How do you safely "rescue" work from a detached HEAD state?
+Single Choice
+A. git switch -c rescue-branch
+B. git detach --fix
+C. git reset --hard HEAD
+D. git restore HEAD
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q82. What does 'git show <tag-name>' do?
+Single Choice
+A. Deletes the tag
+B. Shows the tag's details including message, tagger info, and the commit it points to
+C. Creates a new tag
+D. Pushes the tag to remote
+
+Answer: B
+
+----------------------------------------------------------------
+SECTION 4: REMOTE BRANCHING, WORKFLOWS & VERSIONING
+----------------------------------------------------------------
+
+Q83. What is the difference between a local branch and a remote-tracking branch?
+Single Choice
+A. Remote-tracking branches are read-only pointers that reflect the last known state of the remote
+B. Local branches cannot be committed to
+C. They are identical
+D. Remote-tracking branches are stored on the server
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q84. Remote-tracking branches (like origin/main) update automatically without any command.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - they update only when you run git fetch or git pull)
+
+----------------------------------------------------------------
+
+Q85. What are the 4 core remote commands you must master?
+Multiple Select
+A. clone
+B. fetch
+C. pull
+D. push
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q86. In Git, branches are always created locally first, and the remote branch exists only after you push.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q87. Which commands can create a local tracking branch from a remote branch?
+Multiple Select
+A. git checkout -b feature/x origin/feature/x
+B. git checkout --track origin/feature/x
+C. git switch --track origin/feature/x
+D. git create-branch origin/feature/x
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q88. When your feature branch is behind main, which approaches can update it?
+Multiple Select
+A. git merge main (preserves merge commits)
+B. git rebase main (linear history)
+C. git delete main
+D. git copy main
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q89. What is the recommended branch lifecycle?
+Single Choice
+A. Create branch -> Merge -> Delete remote and local branch
+B. Create branch -> Keep forever
+C. Create branch -> Never merge
+D. Create branch -> Push without merging
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q90. What does a Git workflow define?
+Multiple Select
+A. Branch types and naming conventions
+B. Merge rules (approvals, CI requirements)
+C. Release and tag rules
+D. Which IDE to use
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q91. In the Feature Branches + Merge Requests workflow, what is the correct order?
+Single Choice
+A. Merge to main -> Open MR -> Push -> Create branch
+B. Create branch -> Push to GitLab -> Open MR -> Merge to main
+C. Push -> Create branch -> Merge -> Open MR
+D. Open MR -> Create branch -> Push -> Merge
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q92. Which characteristics describe Trunk-Based Development?
+Multiple Select
+A. Branches live for hours to one day
+B. Small, focused commits merged to main daily
+C. Feature flags hide incomplete work in production
+D. Requires fast, reliable CI and strong automated test coverage
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q93. Which workflow is typically the practical starting point for most teams?
+Single Choice
+A. Trunk-Based Development
+B. Feature Branch workflow with Merge Requests
+C. Direct commits to main
+D. Tag-only workflow
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q94. What is the difference between branches and tags in terms of purpose?
+Single Choice
+A. Branches represent ongoing work (moving pointer); tags mark milestones (fixed pointer)
+B. Branches are for production, tags are for development
+C. There is no difference
+D. Tags are faster than branches
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q95. Why do tagging strategies typically target only the main branch?
+Single Choice
+A. Tags don't work on other branches
+B. Tagging unmerged commits breaks release traceability
+C. Other branches are encrypted
+D. Git prevents tagging non-main branches
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q96. What does squash merging do?
+Single Choice
+A. Preserves all individual commits
+B. Collapses all commits from a branch into a single new commit
+C. Deletes the branch without merging
+D. Creates a merge commit with multiple parents
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q97. When rebasing, what happens to commit hashes?
+Single Choice
+A. They remain the same
+B. Each replayed commit gets a new SHA-1 hash
+C. They are deleted
+D. They become shorter
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q98. When is rebasing safe?
+Multiple Select
+A. On your local feature branch that has never been pushed
+B. On a branch only you have ever used
+C. On the main branch that many teammates use
+D. On any commit shared with others
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q99. What is the preferred "safer" force push command?
+Single Choice
+A. git push --force
+B. git push --force-with-lease
+C. git push -f
+D. git push --overwrite
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q100. Why is 'git push --force-with-lease' safer than 'git push --force'?
+Single Choice
+A. It's actually more dangerous
+B. It only force-pushes if the remote hasn't been updated by someone else since your last fetch
+C. It requires admin privileges
+D. It creates a backup automatically
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q101. How do merge conflicts differ from rebase conflicts?
+Single Choice
+A. Merge conflicts surface once; rebase conflicts may appear per commit being replayed
+B. There is no difference
+C. Only merges have conflicts
+D. Only rebases have conflicts
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q102. Which commands are used during rebase conflict resolution?
+Multiple Select
+A. git rebase --continue (after resolving)
+B. git rebase --abort (to undo the operation)
+C. git rebase --skip (to skip a commit)
+D. git rebase --force (to ignore conflicts)
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q103. Which strategy is best if your team values a clean, linear commit history?
+Single Choice
+A. Merge
+B. Rebase
+C. Cherry-pick
+D. Revert
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q104. Which strategy is best if your team needs a comprehensive audit trail of all development activity?
+Single Choice
+A. Merge
+B. Rebase
+C. Squash
+D. Reset
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q105. The main branch must always remain stable and fully tested, regardless of the chosen strategy.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q106. What is the correct command sequence to create and push a new feature branch?
+Single Choice
+A. git push -u origin feature/x -> git checkout -b feature/x -> commit
+B. git checkout -b feature/x -> make commits -> git push -u origin feature/x
+C. git commit -> git branch feature/x -> git push
+D. git push origin feature/x -> git checkout feature/x
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q107. When rebasing, if 5 commits are being replayed, you might resolve conflicts up to:
+Single Choice
+A. 1 time
+B. 2 times
+C. 5 times
+D. Only once no matter how many commits
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q108. Which of these are valid "integration strategies" to bring changes from one branch to another?
+Multiple Select
+A. Merge (creates merge commit)
+B. Rebase (rewrites history)
+C. Squash (single new commit)
+D. Delete (removes both branches)
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q109. What happens when you try 'git push' after rebasing a branch you've already pushed?
+Single Choice
+A. It succeeds normally
+B. Git rejects it because the histories have diverged
+C. It silently overwrites the remote
+D. Git automatically rebases the remote
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q110. In GitLab, what triggers CI/CD pipelines automatically?
+Multiple Select
+A. Opening a Merge Request
+B. Pushing to a branch
+C. Pushing a tag (often matching v* pattern)
+D. Creating a local branch
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+SECTION 5: ADDITIONAL MIXED QUESTIONS
+----------------------------------------------------------------
+
+Q111. Which design goals motivated Git's creation?
+Multiple Select
+A. Speed
+B. Data integrity
+C. Distributed workflow support
+D. Large project support
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q112. What does 'git push origin --tags' do?
+Single Choice
+A. Pushes all tags to the remote
+B. Deletes all tags
+C. Lists remote tags
+D. Creates a new tag
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q113. A centralized VCS has which major weakness?
+Single Choice
+A. It's too fast
+B. The server is a single point of failure
+C. It can't handle branches
+D. It doesn't track authors
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q114. The staging area determines what goes into the next commit.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q115. Which situations are appropriate for using 'git revert' instead of 'git reset'?
+Multiple Select
+A. The commit has been pushed to a shared branch
+B. You need to preserve the audit trail
+C. The workflow has branch protection rules
+D. You want to permanently rewrite history
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q116. Common Git alias 'lg' typically expands to:
+Single Choice
+A. git log --oneline --decorate --all --graph
+B. git log --graph
+C. git list-groups
+D. git ls --graph
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q117. Which are advantages of using Merge Requests (or Pull Requests)?
+Multiple Select
+A. Audit trail of changes
+B. Facilitate code review and discussion
+C. Trigger automated CI/CD pipelines
+D. Serve as documentation
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q118. Which command lists your configured remotes with URLs?
+Single Choice
+A. git remote -v
+B. git remote list
+C. git show remotes
+D. git config --remotes
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q119. Annotated tags store which additional information compared to lightweight tags?
+Multiple Select
+A. Tagger name
+B. Tagger email
+C. Date and message
+D. GPG signature (when signed)
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q120. Which command shows a quick, compact history view with graph?
+Single Choice
+A. git log --oneline --graph --all --decorate
+B. git history
+C. git show --all
+D. git log verbose
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q121. After merging a feature branch into main via MR, best practice is to:
+Single Choice
+A. Keep the branch forever as a backup
+B. Delete both the remote and local feature branch
+C. Rename it to "old-feature"
+D. Push it to a separate server
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q122. In a 3-way merge, a conflict occurs when:
+Single Choice
+A. Only one side changed a section
+B. Both sides changed the same section differently
+C. No sides changed anything
+D. The base commit is missing
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q123. Which file is Git's entire storage system stored in?
+Single Choice
+A. .github/
+B. .git/
+C. git.db
+D. repo.data
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q124. Which command shows your configuration settings?
+Single Choice
+A. git config --list
+B. git show-config
+C. git settings
+D. git print config
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q125. Which modern Git command is the cleaner alternative to 'git checkout' for switching branches?
+Single Choice
+A. git switch
+B. git move
+C. git jump
+D. git goto
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q126. What is the purpose of a .gitignore file?
+Single Choice
+A. To hide files from other developers
+B. To specify files and patterns Git should not track
+C. To encrypt sensitive files
+D. To automatically delete files
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q127. When should you use 'git commit --amend'?
+Multiple Select
+A. To fix a typo in the most recent commit message
+B. To add a forgotten file to the most recent commit
+C. To modify commits pushed to main
+D. To rewrite many old commits
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q128. What does 'HEAD~1' refer to?
+Single Choice
+A. The current commit
+B. The commit one before the current HEAD
+C. The first commit of the repository
+D. The remote HEAD
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q129. Which statement about remote-tracking branches is TRUE?
+Multiple Select
+A. They are read-only (you can't commit directly to them)
+B. They are updated by git fetch or git pull
+C. Examples include origin/main and origin/feature/x
+D. They exist only on the remote server
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q130. Which are legitimate reasons to use a force push?
+Multiple Select
+A. After rebasing your own unshared feature branch
+B. As a routine daily operation on main
+C. When cleaning up commits after MR feedback on your feature branch (coordinated)
+D. To overwrite a teammate's pushed commits without notice
+
+Answer: A, C
+
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+SECTION 6: ADDITIONAL QUESTIONS FROM LECTURE PDFS
+(Version Control Foundations, Branching/Merging/Conflicts,
+GitLab Workflow/History/Undoing/Remotes)
+----------------------------------------------------------------
+
+Q131. Which command verifies that Git was installed correctly on your system?
+Single Choice
+A. git check
+B. git --version
+C. git verify
+D. git status
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q132. On Debian/Ubuntu, which command installs Git?
+Single Choice
+A. brew install git
+B. sudo apt install git
+C. winget install --id Git.Git
+D. yum install git
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q133. Which statement about Git being a "content-addressable database" is TRUE?
+Single Choice
+A. Objects are identified by their filename and path
+B. Objects are identified by a unique SHA-1 hash derived from their content
+C. Objects are stored in a central cloud
+D. Objects are identified by the author's name
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q134. In Git, unchanged files at a commit are:
+Single Choice
+A. Duplicated so each commit has its own complete copy
+B. Stored as references to the existing object rather than duplicated
+C. Deleted from the snapshot
+D. Compressed with a different hash each time
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q135. What is the role of the SHA-1 hash in Git's integrity design?
+Single Choice
+A. It encrypts the file so no one can read it
+B. It uniquely identifies each object; changing content changes the hash, making tampering detectable
+C. It compresses the file for storage
+D. It replaces the commit author's name
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q136. Which of the following are true about commits in Git?
+Multiple Select
+A. A commit is a complete snapshot of tracked files, not just a diff
+B. Each commit has a unique hash
+C. Commits reference their parent(s)
+D. Commits can exist without an author
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q137. Branch names in Git are stored as:
+Single Choice
+A. Large binary files in .git/objects
+B. Small text files (lightweight pointers) inside .git/
+C. Entries in a remote database
+D. Environment variables
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q138. Why does Git make branch creation nearly instantaneous?
+Single Choice
+A. Because it copies the entire project to a new folder
+B. Because a branch is just a lightweight pointer (a small text file) to a commit
+C. Because Git uses GPU acceleration
+D. Because branches are stored on the remote
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q139. Which command gives an in-terminal short summary of options for any Git command?
+Single Choice
+A. git help <command>
+B. git <command> -h
+C. git manual <command>
+D. git info <command>
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q140. Good commit messages should answer which two questions?
+Single Choice
+A. Who and where
+B. What changed and why
+C. When and how long
+D. Which IDE and which OS
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q141. Why is committing secrets (passwords, API keys) so dangerous?
+Single Choice
+A. Git refuses to commit such files
+B. Once committed, they remain in history and are extremely difficult to fully remove — even after deletion
+C. They make the repository run slower
+D. They trigger automatic CI/CD pipelines
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q142. Git's history is best described as a:
+Single Choice
+A. Straight line of commits
+B. Directed acyclic graph (DAG) where commits point back to their parent(s)
+C. Circular linked list
+D. Hash table
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q143. Which statements about branches are TRUE?
+Multiple Select
+A. A branch is a lightweight, movable pointer to a specific commit
+B. A branch pointer advances automatically as you commit
+C. Branches represent work in progress
+D. Branches are immutable once created
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q144. A fast-forward merge keeps history:
+Single Choice
+A. Messy and non-linear
+B. Perfectly linear (no new merge commit needed)
+C. Empty
+D. Encrypted
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q145. In a 3-way merge, if only ONE side changed a section and the other side didn't, Git will:
+Single Choice
+A. Raise a conflict
+B. Automatically take the changed side's version
+C. Delete that section entirely
+D. Ask the user every time
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q146. When Git encounters a conflict, what does it do to the affected files?
+Single Choice
+A. Deletes them
+B. Marks the conflicted sections inside the files using special conflict markers and pauses the merge
+C. Replaces them with an empty file
+D. Automatically picks the incoming version
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q147. Which of the following is the correct mindset toward merge conflicts?
+Single Choice
+A. They are a bug and indicate a broken Git installation
+B. They are a required human decision and a natural part of collaborative development
+C. They should always be avoided by force-pushing
+D. They mean your repository is corrupted
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q148. The 'recursive' (default) merge strategy is specifically designed to handle:
+Single Choice
+A. Only fast-forward merges
+B. Criss-cross merge histories correctly using multiple common ancestors
+C. Only merges between three or more branches
+D. Merges that involve external repositories
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q149. The 'resolve' merge strategy is best described as:
+Single Choice
+A. The modern default strategy
+B. An older, simpler two-branch strategy that has largely been replaced by recursive
+C. The strategy used for merging more than two branches
+D. A strategy for embedding external projects
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q150. Which statements about the 'ours' merge strategy are TRUE?
+Multiple Select
+A. It records a merge in the commit graph (history shows a merge occurred)
+B. It completely ignores all content from the incoming branch
+C. Used carelessly, it can silently discard real code changes
+D. It always resolves conflicts automatically in favor of the incoming branch
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q151. Which is a known downside of the subtree strategy compared to Git submodules?
+Single Choice
+A. Subtrees require extra init steps when cloning
+B. Subtrees are harder to contribute back upstream
+C. Subtrees cannot be used with external code
+D. Subtrees cannot be merged
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q152. Before every merge, what should you always confirm?
+Single Choice
+A. Which branch you are currently on (e.g., via git branch)
+B. The file size of .git/
+C. The number of commits in reflog
+D. Your SSH key fingerprint
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q153. Why should you use Merge Requests even when working solo?
+Multiple Select
+A. They provide an explicit audit trail
+B. They facilitate discussion and serve as documentation
+C. They are the foundational standard for CI/CD pipelines
+D. They prevent all merge conflicts automatically
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q154. A local repository is:
+Single Choice
+A. A cache that is cleared every time you close the terminal
+B. A complete copy of your project history stored on your own machine, usable offline
+C. The same thing as a remote repository
+D. Only accessible through a browser
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q155. After 'git clone <url>', which remote is automatically configured?
+Single Choice
+A. upstream
+B. origin
+C. main
+D. master
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q156. History is most valuable to professional developers when used as:
+Single Choice
+A. A log of what happened only
+B. A debugging and auditing tool that can be actively queried
+C. A backup replacement
+D. A compression mechanism
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q157. A well-maintained Git history should instantly answer which questions?
+Multiple Select
+A. What changed?
+B. When did it change?
+C. Why was it changed?
+D. Who made the change?
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q158. Which command is recommended before any undo operation to confirm you are targeting the right commit?
+Single Choice
+A. git push
+B. git show (and/or git diff)
+C. git clone
+D. git tag
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q159. What does 'git log -- path/to/file' show?
+Single Choice
+A. The current contents of the file
+B. The full history of a single file, regardless of renames
+C. The file's size in bytes
+D. Only the last commit that touched the file
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q160. Which Git command is NOT an "undo" operation — it's only used to inspect what changed?
+Single Choice
+A. git restore
+B. git reset
+C. git diff
+D. git revert
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q161. 'git restore --staged <file>' deletes your edits permanently.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - it only moves the change back to the working tree; edits remain)
+
+----------------------------------------------------------------
+
+Q162. In 'git reset --mixed HEAD~1', the changes from the undone commit end up:
+Single Choice
+A. Permanently deleted
+B. In the staging area, still staged
+C. In the working tree, unstaged
+D. Pushed to origin
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q163. Why is 'git revert' safer than 'git reset' for pushed commits?
+Multiple Select
+A. The original commit stays in history (audit trail preserved)
+B. It does not rewrite history, so teammates won't get conflicts
+C. It is required in workflows with branch protection rules
+D. It is faster than reset
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q164. By default, for how many days does Git retain reflog entries locally?
+Single Choice
+A. 30 days
+B. 60 days
+C. 90 days
+D. Forever
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q165. After recovering a lost commit via reflog, what is the recommended immediate next step?
+Single Choice
+A. Force push to origin
+B. Create a branch at the recovered commit to protect it
+C. Delete the reflog
+D. Rename the main branch
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q166. What is the main advantage of git fetch over git pull?
+Single Choice
+A. fetch is faster but less reliable
+B. fetch is safe — it only updates origin/* refs and never touches your local branches, letting you inspect before integrating
+C. fetch automatically merges without review
+D. fetch requires no authentication
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q167. The setting 'git config --global pull.ff only' does what?
+Single Choice
+A. Allows git pull to always rebase
+B. Allows git pull to complete only if it can be a fast-forward; otherwise it just fetches and lets you integrate manually
+C. Disables git pull entirely
+D. Forces all pulls to create a merge commit
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q168. Which of the following are TRUE about git rebase vs git merge?
+Multiple Select
+A. Merge is non-destructive and preserves original commits
+B. Rebase rewrites history and produces a linear log
+C. Rebase changes commit hashes for the replayed commits
+D. Merge always produces a linear history with no merge commits
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q169. Which is TRUE about lightweight tags vs annotated tags?
+Single Choice
+A. Lightweight tags store tagger name, email, date, and a message
+B. Annotated tags are full Git objects that store metadata (name, email, date, message) and can be GPG-signed
+C. Lightweight tags cannot point to commits
+D. Annotated tags are automatically deleted after a release
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q170. To push a specific annotated tag (e.g., v0.1.1) to the remote, you can use:
+Single Choice
+A. git push origin v0.1.1
+B. git tag --push v0.1.1
+C. git send-tag v0.1.1
+D. git commit --tag v0.1.1
+
+Answer: A
+
+----------------------------------------------------------------
+
+END OF PRACTICE QUESTIONS (170 Total)
+================================================================
+
+QUICK ANSWER KEY SUMMARY:
+Q1-B | Q2-A,C,D | Q3-A | Q4-A | Q5-C | Q6-A,B,C | Q7-A,B,C,D | Q8-C | Q9-B | Q10-B
+Q11-C | Q12-A,B,D | Q13-B | Q14-A | Q15-B | Q16-B | Q17-A,B,C | Q18-A,B,C | Q19-A | Q20-B
+Q21-B | Q22-B | Q23-A,B,C | Q24-B | Q25-B | Q26-B | Q27-B | Q28-B | Q29-A,B,C,D | Q30-C
+Q31-A,B,C | Q32-B | Q33-B | Q34-B | Q35-B | Q36-A | Q37-A,B | Q38-B | Q39-A,B,C | Q40-B
+Q41-A | Q42-B | Q43-A,B,C,D | Q44-B | Q45-B | Q46-B | Q47-B | Q48-A,B,C,D | Q49-B | Q50-A,B
+Q51-B | Q52-A | Q53-C | Q54-B | Q55-B | Q56-A,B,C | Q57-A | Q58-C | Q59-B | Q60-B
+Q61-B | Q62-B | Q63-C | Q64-B | Q65-B | Q66-A | Q67-B | Q68-A,B,C | Q69-A,B,C | Q70-A
+Q71-A | Q72-A,B | Q73-B | Q74-B | Q75-B | Q76-B | Q77-B | Q78-B | Q79-B | Q80-B
+Q81-A | Q82-B | Q83-A | Q84-B | Q85-A,B,C,D | Q86-A | Q87-A,B,C | Q88-A,B | Q89-A | Q90-A,B,C
+Q91-B | Q92-A,B,C,D | Q93-B | Q94-A | Q95-B | Q96-B | Q97-B | Q98-A,B | Q99-B | Q100-B
+Q101-A | Q102-A,B,C | Q103-B | Q104-A | Q105-A | Q106-B | Q107-C | Q108-A,B,C | Q109-B | Q110-A,B,C
+Q111-A,B,C,D | Q112-A | Q113-B | Q114-A | Q115-A,B,C | Q116-A | Q117-A,B,C,D | Q118-A | Q119-A,B,C,D | Q120-A
+Q121-B | Q122-B | Q123-B | Q124-A | Q125-A | Q126-B | Q127-A,B | Q128-B | Q129-A,B,C | Q130-A,C
+Q131-B | Q132-B | Q133-B | Q134-B | Q135-B | Q136-A,B,C | Q137-B | Q138-B | Q139-B | Q140-B
+Q141-B | Q142-B | Q143-A,B,C | Q144-B | Q145-B | Q146-B | Q147-B | Q148-B | Q149-B | Q150-A,B,C
+Q151-B | Q152-A | Q153-A,B,C | Q154-B | Q155-B | Q156-B | Q157-A,B,C,D | Q158-B | Q159-B | Q160-C
+Q161-B | Q162-C | Q163-A,B,C | Q164-C | Q165-B | Q166-B | Q167-B | Q168-A,B,C | Q169-B | Q170-A
+
+================================================================
+GOOD LUCK ON YOUR MIDTERM!
+================================================================
