@@ -1,0 +1,447 @@
+Git & GitLab Midterm Practice Pack
+Version Control and Continuous Integration
+
+This pack contains 5 practice variants that mix together everything from Lectures 1–5 plus the Distributed Git / Fork Workflow lab. Each variant is scoped to roughly the same size as your real lab exercises so you can do them end-to-end in one sitting.
+
+How to use this pack
+1.	Pick ONE variant and do it start-to-finish without peeking at the answer key.
+2.	Use a disposable repo (or a sandbox branch) so you can practice destructive operations freely.
+3.	At the end, run the verification checklist at the bottom of the variant — if every command returns what is expected, you passed.
+4.	If something fails, look at the Answer Key for that variant ONLY AFTER you have tried to debug it yourself.
+
+Topic coverage map (quick reference)
+•	Variant 1 — Setup, local commits, safe undo (Lectures 1 & 2)
+•	Variant 2 — Branching & merging with real conflicts (Lecture 3)
+•	Variant 3 — Remote branches, MR flow, rebase vs merge (Lecture 4)
+•	Variant 4 — GitLab governance: protected branches, MR template, CI (Lecture 5)
+•	Variant 5 — Fork workflow, stash, upstream sync, revision selection (Lecture 6 lab)
+
+Tip before you start
+💡 Create a scratch folder ~/git-midterm-prep and work inside it. Each variant assumes you cd into a subfolder so your main course repo stays clean.
+ 
+Variant 1 — Foundations: Setup, First Commits, Safe Undo
+Scenario: A colleague just got a new Windows machine and asked you to bootstrap a small repo for them called mini-site. You will configure Git, build a small history, then practice undoing mistakes safely.
+
+Tasks
+☐	Verify Git is installed and show its version.
+☐	Configure your global identity (name + email) and set the default branch name to main.
+☐	Create a new repo mini-site and add a README.md with a title and one paragraph.
+☐	Make a SECOND commit that adds a .gitignore ignoring *.log and a build/ folder.
+☐	Make a THIRD commit that adds index.html with a simple <h1>.
+☐	View history compactly on one line with graph + decorations.
+☐	Edit README.md and DO NOT stage it. Then discard the edit and confirm the file is clean.
+☐	Edit README.md, STAGE it, then UNSTAGE it (the edit should still exist in the working tree).
+☐	Create an alias lg for the pretty log command you just used.
+☐	Create a lightweight tag v0.1 and an annotated tag v0.1.1 with message "First milestone".
+
+Verification Checklist
+•	git log --oneline shows exactly 3 commits.
+•	git status is clean at the end.
+•	git tag lists both v0.1 and v0.1.1.
+•	git show v0.1.1 shows a tagger, date, and the message "First milestone".
+•	git show v0.1 does NOT show a tagger line (because it's lightweight).
+•	git lg works as an alias.
+•	git config --global --get-regexp alias lists alias.lg.
+
+Answer Key — Variant 1
+Setup
+git --version
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main
+git config --global --list
+Repo + three commits
+mkdir mini-site && cd mini-site
+git init
+printf "# Mini Site\n\nPersonal demo repo.\n" > README.md
+git add README.md
+git commit -m "docs: add README"
+
+printf "*.log\nbuild/\n" > .gitignore
+git add .gitignore
+git commit -m "chore: add gitignore"
+
+printf "<h1>Hello</h1>\n" > index.html
+git add index.html
+git commit -m "feat: add index page"
+History view
+git log --oneline --decorate --graph --all
+Safe undo — unstaged edit
+echo "accidental" >> README.md
+git status            # shows modified, NOT staged
+git diff              # shows the added line
+git restore README.md # discards working-tree change
+git status            # clean
+Safe undo — unstage a staged edit
+echo "oops" >> README.md
+git add README.md
+git status                    # shows staged change
+git restore --staged README.md
+git status                    # shows modified again, not staged
+git restore README.md         # optional: also discard working tree
+💡 Remember: git restore --staged unstages; git restore (without --staged) discards the working-tree change. Two different things.
+Alias
+git config --global alias.lg "log --oneline --decorate --graph --all"
+Tags
+git tag v0.1                             # lightweight
+git tag -a v0.1.1 -m "First milestone"   # annotated
+git tag
+git show v0.1.1
+ 
+Variant 2 — Branching, Merging, and a Real Conflict
+Scenario: Inside any existing repo (use mini-site from Variant 1, or create a fresh sandbox repo), two teammates touched the same config line. You must produce a clean merge on main and resolve the conflict intentionally.
+
+Tasks
+☐	Starting from main, create branch feature/welcome, add one meaningful line to README.md, commit, and merge it back into main (push if you're using a remote).
+☐	On main, create config.env with two lines: KEY1=base and KEY2=base. Commit.
+☐	Create branch conflict/a — change KEY1 to KEY1=alpha, commit.
+☐	Create branch conflict/b from main (not from conflict/a!) — change KEY1 to KEY1=beta, commit.
+☐	Merge conflict/a into main (fast-forward or merge commit — either is fine).
+☐	Merge conflict/b into main — this MUST produce a conflict in config.env.
+☐	Resolve the conflict so final content is exactly: KEY1=beta and KEY2=base (no conflict markers). Complete the merge.
+☐	Show the commit graph and confirm main has a merge commit with TWO parents.
+☐	Record the merge-base of main and conflict/b BEFORE your final merge (hint: you had to capture it before merging — do it on a fresh pair of branches if you missed it).
+☐	Create a "bad commit" on main (add a line "typo!!!" to README.md) and undo it using git revert.
+
+Verification Checklist
+•	cat config.env prints exactly KEY1=beta and KEY2=base on two lines, nothing else — no <<<<<<< or >>>>>>> markers.
+•	git status is clean.
+•	git log --oneline --graph --all shows a diamond shape: main splits into conflict/a and conflict/b and they rejoin.
+•	git log --merges shows at least one merge commit.
+•	git show <merge-commit-hash> shows two lines starting with Merge: <sha1> <sha2>.
+•	git log --oneline shows a revert commit with message starting with Revert:.
+•	cat README.md no longer contains the line typo!!!.
+
+Answer Key — Variant 2
+Simple branch + merge
+git switch main
+git switch -c feature/welcome
+echo "Welcome to the demo." >> README.md
+git add README.md && git commit -m "docs: welcome line"
+git switch main
+git merge feature/welcome
+Setting up the conflict
+# on main
+printf "KEY1=base\nKEY2=base\n" > config.env
+git add config.env && git commit -m "chore: add config.env"
+
+git switch -c conflict/a
+sed -i 's/KEY1=base/KEY1=alpha/' config.env
+git commit -am "config: set KEY1=alpha"
+
+git switch main
+git switch -c conflict/b
+sed -i 's/KEY1=base/KEY1=beta/' config.env
+git commit -am "config: set KEY1=beta"
+Triggering and resolving the conflict
+git switch main
+git merge conflict/a           # fast-forwards, no conflict
+git merge conflict/b           # CONFLICT in config.env
+git status                      # shows both modified
+# open config.env, remove <<<<<<<, =======, >>>>>>> markers,
+# leave KEY1=beta and KEY2=base
+git add config.env
+git commit                     # completes the merge commit
+git log --oneline --graph --all
+💡 Alternative using the built-in technique from lab B2: git checkout --theirs config.env && git add config.env && git commit. "theirs" here means the branch you are merging IN (conflict/b).
+Recording the merge-base
+git merge-base main conflict/b   # run this BEFORE the final merge
+The hash it prints is the last commit main and conflict/b had in common. In a diamond history it should point to the commit where conflict/b branched off.
+Revert a bad commit
+git switch main
+echo "typo!!!" >> README.md
+git add README.md && git commit -m "docs: oops"
+git revert HEAD                # creates a new commit that inverts the bad one
+git log --oneline -4
+💡 Revert is the right tool AFTER you've pushed. Reset rewrites history and is only safe on commits that exist nowhere else.
+ 
+Variant 3 — Remote Branches, MR Flow, Rebase vs Merge
+Scenario: Use your GitLab app repo (vc-ci-<group>-<studentID>-app) or any private GitLab project you control. You will simulate the classic situation where main moves forward while you're working on a feature branch, and practice BOTH ways of updating your branch.
+
+Tasks
+☐	On main: pull latest, then confirm main is up to date with origin/main (git branch -vv).
+☐	Create branch feature/notes-a, append a line to README.md, push with -u, and open a Merge Request in the GitLab UI. Do NOT merge it yet.
+☐	Back on main, create a SECOND branch feature/notes-b, add a different line to README.md, push, open MR, and SQUASH MERGE this one into main via GitLab UI. Delete the source branch.
+☐	Locally: switch to main and update it (git pull --ff-only). main has now moved forward since you created feature/notes-a.
+☐	Update feature/notes-a using MERGE strategy (git merge origin/main into it). Resolve any conflict. Push.
+☐	Now REDO the same scenario but with a third branch feature/notes-c and update it using REBASE instead. Push with --force-with-lease.
+☐	Squash-merge feature/notes-a and feature/notes-c via MR.
+☐	Tag main with annotated tag v0.5 and push the tag.
+
+Verification Checklist
+•	git branch -vv on main shows [origin/main] with no "ahead" or "behind".
+•	In the GitLab UI, the main branch history shows a linear chain of squashed commits (because you used squash merges).
+•	For feature/notes-a: git log --oneline feature/notes-a (before it was merged) showed a MERGE commit — evidence you used the merge strategy.
+•	For feature/notes-c: git log --oneline feature/notes-c (before it was merged) showed NO merge commit and the feature commits sat on top of origin/main — evidence of rebase.
+•	git tag --list | grep v0.5 returns v0.5.
+•	git show v0.5 shows a tagger, date, and your annotation message.
+
+Answer Key — Variant 3
+Starting point
+git switch main
+git pull --ff-only
+git branch -vv
+git remote -v
+Two parallel feature branches
+git switch -c feature/notes-a
+printf "\n- Note A\n" >> README.md
+git commit -am "docs: note A"
+git push -u origin feature/notes-a
+# GitLab UI: open MR (do NOT merge)
+
+git switch main
+git switch -c feature/notes-b
+printf "\n- Note B\n" >> README.md
+git commit -am "docs: note B"
+git push -u origin feature/notes-b
+# GitLab UI: open MR, SQUASH MERGE, delete source branch
+Update feature/notes-a via MERGE
+git switch main
+git pull --ff-only                 # main now has note B
+git switch feature/notes-a
+git fetch origin
+git merge origin/main              # creates a merge commit on your branch
+# if conflict in README.md: resolve, git add, git commit
+git push
+Update feature/notes-c via REBASE
+git switch main
+git pull --ff-only
+git switch -c feature/notes-c
+printf "\n- Note C\n" >> README.md
+git commit -am "docs: note C"
+git push -u origin feature/notes-c
+
+# Pretend someone else pushes to main here — merge feature/notes-a via MR,
+# then locally:
+git switch main && git pull --ff-only
+git switch feature/notes-c
+git fetch origin
+git rebase origin/main             # replays your commits ON TOP of new main
+# if conflict: resolve, git add, git rebase --continue
+git push --force-with-lease        # required: rebase rewrote commit SHAs
+💡 --force-with-lease is safer than --force: it refuses to overwrite the remote branch if someone else pushed to it since your last fetch. Use it every time you push a rebased branch.
+Tagging the milestone
+git switch main
+git pull --ff-only
+git tag -a v0.5 -m "Lecture 4 milestone"
+git push origin v0.5
+git show v0.5
+Merge vs Rebase — what to look for
+•	MERGE keeps an extra "Merge branch 'main' into feature/notes-a" commit on your branch. History is a diamond. Safe, never rewrites.
+•	REBASE replays your commits with new SHAs on top of main. History is linear. Requires --force-with-lease to push.
+•	Rule of thumb: rebase your OWN feature branch before merging. Never rebase main, and never rebase a branch others are basing work on.
+ 
+Variant 4 — GitLab Governance (Protected Branches, MR Template, CI)
+Scenario: You've been asked to make the app repo look like a real corporate project. All of this is done in the GitLab UI plus committing config files in the repo. Free-tier features only.
+
+Tasks
+☐	In your personal namespace, create 3 GitLab groups simulating teams: devs, devops, qa. Add yourself as a member of each.
+☐	In the APP repo → Settings → Repository → Protected branches: make main protected so that only Maintainers can push AND force push is disabled. Enable auto-delete source branch after merge if shown.
+☐	Prove main is protected: try to push a commit directly to main from your local machine as a Developer and confirm it is rejected.
+☐	In the APP repo, on a feature branch feature/mr-template, create file .gitlab/merge_request_templates/Default.md with sections: Summary, Work Item, Risk, Testing Evidence, Security Checklist, Rollback Plan, Reviewers. Push, open MR, squash merge to main.
+☐	Verify the template: open a NEW MR — the description box should be pre-filled with your template.
+☐	On a feature branch feature/ci, add .gitlab-ci.yml with a single stage validate that runs echo "CI is running". Push and confirm a pipeline runs on the MR.
+☐	Do a full corporate MR flow: branch feature/VC-101-governance-demo, small README change, open MR, apply the Default template, mention @devops and @qa, wait for pipeline green, squash merge.
+
+Verification Checklist
+•	GitLab UI shows 3 groups: devs, devops, qa.
+•	APP repo → Settings → Repository → Protected branches shows main with "Allowed to push" restricted (typically Maintainers only) and force push off.
+•	Direct git push origin main from a Developer fails with a "protected branch" error message.
+•	The file .gitlab/merge_request_templates/Default.md exists on main.
+•	Creating a new MR pre-fills the description with the template content.
+•	.gitlab-ci.yml on main triggers a pipeline and it passes (green).
+•	MR for VC-101 was merged and its source branch auto-deleted.
+
+Answer Key — Variant 4
+Groups
+In GitLab: top-nav → Groups → New group. Make three (devs, devops, qa) under your personal namespace. Use each group page → Members → Invite → yourself as Owner (or leave as default, you're already the creator).
+Protected main
+•	Project → Settings → Repository → Expand "Protected branches".
+•	Branch: main. Allowed to merge: Developers + Maintainers. Allowed to push: Maintainers (or No one).
+•	Toggle off force-push if visible.
+•	Enable "Auto-delete source branch after merge" under General → Merge requests.
+Prove protection works
+git switch main
+echo "direct push test" >> README.md
+git commit -am "test: should be rejected"
+git push origin main
+# Expected: remote: GitLab: You are not allowed to push code to protected branches on this project.
+# Undo the local commit so main isn't ahead:
+git reset --hard origin/main
+MR template file
+git switch main && git pull --ff-only
+git switch -c feature/mr-template
+mkdir -p .gitlab/merge_request_templates
+cat > .gitlab/merge_request_templates/Default.md <<'EOF'
+# Summary
+<!-- What changed and why? -->
+
+## Work Item (required)
+VC-___
+
+## Risk
+- [ ] Low
+- [ ] Medium
+- [ ] High
+
+## Testing Evidence
+
+## Security Checklist
+- [ ] No secrets/tokens committed
+- [ ] Dependencies unchanged OR reviewed
+- [ ] No suspicious shell scripts added
+
+## Rollback Plan
+
+## Reviewers
+- Requested: @devops @qa
+EOF
+git add .gitlab/
+git commit -m "chore: add MR template"
+git push -u origin feature/mr-template
+# GitLab UI: open MR, squash merge, delete branch
+Minimal CI
+git switch main && git pull --ff-only
+git switch -c feature/ci
+cat > .gitlab-ci.yml <<'EOF'
+stages:
+  - validate
+
+validate:
+  stage: validate
+  script:
+    - echo "CI is running"
+EOF
+git add .gitlab-ci.yml
+git commit -m "ci: add minimal pipeline"
+git push -u origin feature/ci
+# GitLab UI: open MR — Pipelines tab should show one running/green
+# Squash merge to main
+💡 Common mistakes: YAML indentation (use 2 spaces, not tabs); missing colon after stage name; .gitlab-ci.yml not at the repo root.
+Full MR flow for VC-101
+git switch main && git pull --ff-only
+git switch -c feature/VC-101-governance-demo
+printf "\n## Governance demo\nThis change exercises the MR template and CI gate.\n" >> README.md
+git add README.md && git commit -m "docs: VC-101 governance demo"
+git push -u origin feature/VC-101-governance-demo
+# GitLab UI:
+# - Open MR, confirm template is pre-filled
+# - Fill in Work Item: VC-101, Risk: Low, etc.
+# - Mention @devops and @qa in the description
+# - Wait for pipeline to be green
+# - Squash merge, confirm source branch is auto-deleted
+ 
+Variant 5 — Fork Workflow, Stash, Upstream Sync, Revision Selection
+Scenario: You are an external contributor to a repo you don't own directly. You will fork, set two remotes, get interrupted mid-work, stash, sync with upstream, and produce two clean commits suitable for review.
+
+Tasks
+☐	In GitLab, fork your APP repo into your devs group (or another namespace you control). This fork is origin for this variant.
+☐	Clone the fork locally. Verify origin points to the fork.
+☐	Add the ORIGINAL repo as a second remote called upstream. Verify git remote -v shows both.
+☐	In the UPSTREAM repo UI, create an Issue titled "VC-201: Improve repo docs" with label docs. Note the issue ID.
+☐	In your local fork clone, create branch feature/VC-201-docs. Edit README.md to add a "## Purpose" paragraph AND edit docs/WORKFLOW.md to clarify the branch-naming rule. (If docs/WORKFLOW.md doesn't exist yet, create it.)
+☐	Use interactive staging (git add -p) to split these edits into TWO separate commits: one for README, one for WORKFLOW.
+☐	Push the branch to your fork. Open an MR from your fork → upstream main with "Closes #<issue-id>" in the description.
+☐	Context switch: start editing index.html (or README again) — do not commit. Stash it with a clear message.
+☐	Create an untracked junk file temp.log, PREVIEW what git clean would remove with -n, then clean it with -f.
+☐	Switch to main, fetch upstream, fast-forward main from upstream/main, then switch back to the feature branch and pop the stash.
+☐	Update your feature branch to be on top of the latest upstream/main by REBASING. Push with --force-with-lease.
+☐	Run the four revision-selection commands listed in the answer key and confirm each one makes sense to you.
+
+Verification Checklist
+•	git remote -v shows TWO remotes: origin → your fork, upstream → the original repo.
+•	git log --oneline feature/VC-201-docs shows exactly TWO commits on top of the base — not one big squashed commit, not three.
+•	git stash list is empty at the end (you popped it).
+•	temp.log does not exist on disk and does not appear in git status.
+•	main is a strict fast-forward of upstream/main (git log --oneline main..upstream/main is empty).
+•	git log --oneline upstream/main..feature/VC-201-docs shows ONLY your two commits.
+•	git log --oneline --graph --all shows your feature branch sitting cleanly on the tip of upstream/main (no merge commit from upstream).
+•	The MR in the upstream repo is open and references the issue with a "Closes #N" link that will auto-close it on merge.
+
+Answer Key — Variant 5
+Fork + two remotes
+# GitLab UI: APP repo → Fork → pick destination (your devs group)
+# Grab the SSH/HTTPS URL of the fork
+git clone git@gitlab.com:<your-ns>/<fork-name>.git
+cd <fork-name>
+git remote -v                          # origin = fork
+git remote add upstream git@gitlab.com:<original-ns>/<orig-name>.git
+git remote -v                          # both origin and upstream
+git fetch upstream
+Feature branch with two clean commits via git add -p
+git switch -c feature/VC-201-docs
+# edit README.md — add a ## Purpose section
+# edit docs/WORKFLOW.md — clarify branch naming
+git status
+git add -p README.md                   # stage only the README hunks
+git commit -m "docs: clarify README purpose"
+git add -p docs/WORKFLOW.md            # stage the WORKFLOW hunks
+git commit -m "docs: clarify branch naming rule"
+git log --oneline                      # should show exactly two new commits
+git push -u origin feature/VC-201-docs
+💡 git add -p interactive keys: y = yes, n = no, s = split a big hunk into smaller ones, q = quit. If the diff is too coarse, press s to split then y/n the pieces.
+Stash + clean during an interruption
+echo "WIP investigation" >> README.md
+git status
+git stash push -m "wip: interrupted work"
+
+echo "junk" > temp.log
+git clean -n                           # PREVIEW — shows 'Would remove temp.log'
+git clean -f                           # actually removes it
+Sync main from upstream, then pop stash
+git switch main
+git fetch upstream
+git pull --ff-only upstream main       # refuses if main diverged — good!
+git switch feature/VC-201-docs
+git stash pop
+git stash list                          # empty
+Rebase feature branch onto updated upstream/main
+git fetch upstream
+git rebase upstream/main
+# resolve conflicts if any: git add <file> && git rebase --continue
+git push --force-with-lease
+Revision selection — four views of your work
+git log --oneline --decorate --graph --all
+git log --oneline upstream/main..HEAD    # commits on my branch NOT in upstream/main
+git diff upstream/main..HEAD             # total diff of my branch vs upstream/main
+git log -- README.md                     # history of one file only
+💡 Range syntax A..B means "commits reachable from B but not from A". It's the cleanest way to ask "what have I added on top of the base branch?"
+ 
+Last-Minute Cheatsheet
+Recovery & undo decision tree
+•	I edited a file but didn't stage it, and I want to throw it away → git restore <file>.
+•	I staged a file but want to unstage it → git restore --staged <file>.
+•	I made a bad commit that is NOT pushed yet → git reset --mixed HEAD~1 (keeps the changes in your working tree) or --hard (deletes them).
+•	I made a bad commit that IS pushed → git revert <hash>. Never force-push to shared branches.
+•	I committed to the wrong branch → git switch <right-branch>, git cherry-pick <hash>, then git reset --hard <old> on the wrong branch.
+•	I'm on detached HEAD and I made commits → git switch -c rescue-branch immediately.
+•	I've lost a commit completely → git reflog, find the SHA, git switch -c rescue <sha>.
+Merge vs rebase — one-line rules
+•	Rebase your own feature branch BEFORE merging into main (clean linear history).
+•	Never rebase main. Never rebase a branch someone else is working on.
+•	After a rebase you must push with --force-with-lease (not --force).
+•	Merge is always safe but adds merge commits.
+Branch lifecycle (the standard flow)
+5.	git switch main && git pull --ff-only
+6.	git switch -c feature/<topic>
+7.	work → git add → git commit (small clean commits)
+8.	git push -u origin feature/<topic>
+9.	Open MR in GitLab UI
+10.	If main moved: git fetch origin && git rebase origin/main → git push --force-with-lease
+11.	Squash merge via UI, delete source branch
+Tag quick reference
+•	Lightweight: git tag v1.0 — just a name pointing at a commit. No metadata.
+•	Annotated: git tag -a v1.0 -m "message" — has tagger, date, message. Use this for releases.
+•	Tags don't push by default: git push origin v1.0 or git push origin --tags.
+Ranges and history inspection
+•	A..B — commits in B but not A (what did this branch add?)
+•	A...B — commits in either but not both (what's diverged?)
+•	git log --oneline --graph --decorate --all — the view to trust.
+•	git merge-base A B — the common ancestor of two branches.
+•	git log -- <path> — history of a single file.
+•	git show <sha> — full diff of one commit.
+GitLab governance essentials
+•	Protected branches live in Settings → Repository → Protected branches.
+•	MR templates go at .gitlab/merge_request_templates/Default.md and apply to all MRs.
+•	CI config is .gitlab-ci.yml at the repo root. Minimum structure is stages + one job.
+•	Fork workflow: origin = your fork, upstream = the original. Sync by git fetch upstream && git rebase upstream/main on your feature branch.
