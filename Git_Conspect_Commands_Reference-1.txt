@@ -1,0 +1,799 @@
+================================================================================
+GIT & GITLAB MIDTERM CONSPECT — ALL COMMANDS WITH EXPLANATIONS
+================================================================================
+Course: Version Control and Continuous Integration
+Use Ctrl+F to find what you need fast.
+
+================================================================================
+1. SETUP & CONFIGURATION
+================================================================================
+
+git --version
+    Print installed Git version. First sanity check after install.
+
+git config --global user.name "Your Name"
+    Set the name attached to every commit you make. Global = all repos on this
+    machine.
+
+git config --global user.email "you@example.com"
+    Set the email attached to every commit. Must match GitLab account email
+    for commits to show as "yours" on GitLab.
+
+git config --global init.defaultBranch main
+    Make new repos start with branch "main" instead of "master".
+
+git config --global core.editor "code --wait"
+    Set VS Code as the editor Git opens for commit messages, rebase TODOs, etc.
+    --wait makes Git wait until you close the editor.
+
+git config --global core.editor "notepad"
+    Same idea, but use Notepad. Simpler if VS Code isn't installed.
+
+git config --global pull.rebase true
+    When you "git pull", rebase your local commits on top of remote instead
+    of creating a merge commit. Cleaner history.
+
+git config --global pull.rebase false
+    Opposite — pull always merges. Classic behaviour.
+
+git config --global pull.ff only
+    Refuse to pull if it would require a merge or rebase. Forces you to
+    decide explicitly. Safest option.
+
+git config --global --list
+    Show all global config values.
+
+git config --global --get-regexp alias
+    List all your aliases.
+
+git config --global alias.st "status"
+    Make "git st" a shortcut for "git status".
+
+git config --global alias.lg "log --oneline --decorate --graph --all"
+    Make "git lg" the pretty graph log. Most useful alias you'll set.
+
+git config --global alias.last "log -1 --stat"
+    Make "git last" show the most recent commit with file stats.
+
+
+================================================================================
+2. SSH KEY (FOR GITLAB)
+================================================================================
+
+ssh-keygen -t ed25519 -C "you@example.com"
+    Generate a new SSH key pair (modern algorithm). Press Enter to accept
+    default path ~/.ssh/id_ed25519. Add a passphrase for extra security.
+
+eval "$(ssh-agent -s)"
+    Start the SSH agent in your current Bash session. The agent holds your
+    decrypted key in memory so you don't retype the passphrase every time.
+
+ssh-add ~/.ssh/id_ed25519
+    Load your private key into the agent.
+
+cat ~/.ssh/id_ed25519.pub
+    Print your PUBLIC key. Copy this and paste into GitLab → Edit Profile →
+    SSH Keys. NEVER share the file without .pub at the end.
+
+ssh -T git@gitlab.com
+    Test the connection to GitLab over SSH. Expected output: a welcome
+    message with your username. If it fails, the public key isn't in GitLab
+    or the agent isn't running.
+
+
+================================================================================
+3. CREATING & CLONING REPOS
+================================================================================
+
+git init
+    Turn the current folder into a Git repo. Creates a hidden .git/ folder.
+
+git clone <url>
+    Download a remote repo to your machine. Creates a folder named after the
+    repo. Sets the source as remote "origin" automatically.
+
+git clone git@gitlab.com:user/project.git
+    Clone via SSH. Requires SSH key to be set up.
+
+git clone https://gitlab.com/user/project.git
+    Clone via HTTPS. Will ask for username/Personal Access Token (NOT your
+    account password — GitLab disabled that).
+
+mkdir -p <folder> && cd <folder>
+    Make a folder (and parent folders if missing) and enter it. The -p means
+    "no error if it already exists".
+
+
+================================================================================
+4. BASIC WORKFLOW (THE BIG FOUR)
+================================================================================
+
+git status
+    Show what's changed, what's staged, what's untracked, and which branch
+    you're on. Run this constantly. When confused, run this.
+
+git add <file>
+    Stage a specific file for the next commit.
+
+git add .
+    Stage everything in the current folder (modified + new). Most common.
+
+git add -p
+    Interactive staging — Git shows you each "hunk" (chunk of changes) and
+    asks y/n/s/q. Use this to split a big edit into multiple clean commits.
+    Keys:
+        y = stage this hunk
+        n = skip this hunk
+        s = split a big hunk into smaller pieces
+        q = quit
+
+git commit -m "message"
+    Create a commit from staged changes with the given message.
+
+git commit -am "message"
+    Stage all MODIFIED tracked files AND commit, in one step. Does NOT add
+    new untracked files — you still need git add for those.
+
+git commit --amend -m "new message"
+    Replace the LAST commit with a new one. Use to fix a typo in the message
+    or to add forgotten files (stage them first, then --amend).
+    DANGER: don't amend commits that are already pushed to a shared branch.
+
+git push
+    Send commits from your current branch to its tracked remote branch.
+
+git push -u origin <branch>
+    First-time push of a new branch. -u sets the "upstream" link so future
+    pushes/pulls know where to go. After this, plain "git push" works.
+
+git pull
+    Fetch from remote AND merge (or rebase, depending on config) into your
+    current branch.
+
+git pull --ff-only
+    Pull only if the result is a fast-forward (no merge needed). Refuses
+    otherwise. Safest pull — forces you to handle divergence explicitly.
+
+git fetch
+    Download remote commits into your local copy WITHOUT merging them. Use
+    when you want to see what's new before deciding what to do.
+
+git fetch upstream
+    Same, but from the "upstream" remote (used in fork workflow).
+
+
+================================================================================
+5. INSPECTING HISTORY
+================================================================================
+
+git log
+    Full commit history, newest first. Verbose.
+
+git log --oneline
+    One commit per line: short SHA + commit message.
+
+git log --oneline --decorate --graph --all
+    THE useful log view. Shows:
+        --oneline   = compact
+        --decorate  = branch/tag names next to commits
+        --graph     = ASCII art of branches/merges
+        --all       = include all branches, not just current
+    Aliased as "git lg" in most setups.
+
+git log --stat
+    Show file changes per commit (which files, how many lines added/removed).
+
+git log -1
+    Show only the most recent commit.
+
+git log -- <path>
+    History of one specific file. Note the "--" — it separates paths from
+    refs so Git doesn't get confused.
+
+git log --merges
+    Show only merge commits.
+
+git show <commit-hash>
+    Full diff of one specific commit (what changed in that commit).
+
+git show HEAD
+    Show the most recent commit on your current branch.
+
+git show v0.1.1
+    Show what a tag points to (and the tag's annotation if it's annotated).
+
+git diff
+    Show UNSTAGED changes (working tree vs index).
+
+git diff --staged
+    Show STAGED changes (index vs last commit). Same as --cached.
+
+git diff HEAD
+    Show ALL changes (staged + unstaged) compared to last commit.
+
+git diff <branch1>..<branch2>
+    Show all changes between two branches (see Section 11 for range syntax).
+
+git reflog
+    Log of every move HEAD has made — switches, commits, resets, rebases.
+    Local only, never pushed. Your "undo of last resort" — if you lost a
+    commit, find its SHA here and recover it.
+
+git reflog --date=iso
+    Same, but with full ISO timestamps.
+
+git branch -vv
+    List local branches with their tracked remote branch and ahead/behind
+    counts. The double -v shows tracking info.
+
+git remote -v
+    List remotes with URLs. Verifies origin and upstream are set right.
+
+
+================================================================================
+6. BRANCHES
+================================================================================
+
+git branch
+    List local branches. The current one has a *.
+
+git branch -a
+    List local AND remote branches.
+
+git switch <branch>
+    Move to an existing branch. Modern command (replaces "git checkout").
+
+git switch -c <new-branch>
+    Create a new branch from the current commit AND switch to it.
+
+git switch -c <new-branch> <starting-point>
+    Create a new branch starting from a specific commit/branch/tag, then
+    switch to it. Useful for branching off a tag or old commit.
+
+git switch main
+    Go back to main.
+
+git switch -                        (with a literal dash)
+    Switch to the previously checked-out branch. Like "cd -" in bash.
+
+git checkout <branch>
+    Older equivalent of git switch. Still works, still in every tutorial.
+
+git checkout -b <new-branch>
+    Older equivalent of git switch -c.
+
+git branch -d <branch>
+    Delete a branch SAFELY (refuses if it has unmerged commits).
+
+git branch -D <branch>
+    Delete a branch FORCEFULLY (even if unmerged). Use with care.
+
+git push origin --delete <branch>
+    Delete a branch on the remote.
+
+
+================================================================================
+7. MERGING
+================================================================================
+
+git merge <branch>
+    Merge <branch> INTO your current branch. If main has moved since the
+    feature branch split, this creates a merge commit.
+
+git merge --ff-only <branch>
+    Merge only if it can fast-forward (no merge commit needed). Refuses
+    otherwise.
+
+git merge --no-ff <branch>
+    Force a merge commit even when fast-forward is possible. Preserves the
+    fact that a feature branch existed.
+
+git merge -s octopus branch1 branch2
+    Merge MULTIPLE branches into one merge commit. Only works if there are
+    no conflicts. Used to demonstrate merge with multiple parents.
+
+git merge --abort
+    Cancel a merge in progress (e.g., when you hit a conflict and want out).
+
+CONFLICT RESOLUTION:
+    When git merge fails with conflicts, opened files contain markers:
+
+        <<<<<<< HEAD
+        your version (current branch)
+        =======
+        their version (incoming branch)
+        >>>>>>> feature/x
+
+    Edit the file, remove all <<<<<<<, =======, >>>>>>> markers, keep what
+    you want, then:
+
+        git add <file>
+        git commit          # completes the merge with default message
+
+git checkout --ours <file>
+    During a conflict: keep YOUR version (the branch you were on when you
+    started the merge). Then "git add <file>" and commit.
+
+git checkout --theirs <file>
+    During a conflict: keep the INCOMING version (the branch being merged in).
+    Then "git add <file>" and commit.
+    NOTE: in a rebase, "ours" and "theirs" SWAP meaning because rebase replays
+    your commits onto the other branch — confusing but important.
+
+git merge-base <branch1> <branch2>
+    Print the SHA of the common ancestor of two branches. The point where
+    they diverged. Useful for understanding what a merge will actually merge.
+
+
+================================================================================
+8. REBASE
+================================================================================
+
+git rebase <branch>
+    Replay your branch's commits ON TOP OF <branch>. Rewrites SHAs.
+    Result: linear history, no merge commit, but commits are technically
+    new objects (new SHAs).
+
+git rebase origin/main
+    Common case: bring your feature branch up to date with main without a
+    merge commit.
+
+git rebase --continue
+    After resolving a conflict during a rebase: stage the fixed file with
+    "git add", then continue the rebase.
+
+git rebase --abort
+    Cancel a rebase in progress, return to where you started.
+
+git rebase --skip
+    Skip the current commit during rebase (you're saying "this commit's
+    changes shouldn't be applied"). Rare.
+
+git rebase -i <commit>
+    Interactive rebase. Opens an editor where you can reorder, squash, drop,
+    reword commits since <commit>. Powerful but only for unpushed commits.
+
+WHEN TO USE WHICH:
+    - Rebase YOUR OWN feature branch BEFORE merging into main → clean linear
+      history.
+    - NEVER rebase main.
+    - NEVER rebase a branch others are working on.
+    - Merge is always safe, never rewrites history, but adds merge commits.
+
+
+================================================================================
+9. UNDOING THINGS (THE DECISION TREE)
+================================================================================
+
+git restore <file>
+    Discard UNSTAGED changes in a file. Working tree is reset to match the
+    index. Replaces older "git checkout -- <file>".
+
+git restore --staged <file>
+    UNSTAGE a file (move it from index back to working tree). The actual
+    edits are kept. Replaces older "git reset HEAD <file>".
+
+git restore --staged --worktree <file>
+    Both unstage AND discard the change. Equivalent to running both
+    --staged and plain restore.
+
+git reset --soft HEAD~1
+    Undo last commit, KEEP changes STAGED.
+
+git reset --mixed HEAD~1            (default, same as just "git reset HEAD~1")
+    Undo last commit, KEEP changes in working tree but UNSTAGED.
+
+git reset --hard HEAD~1
+    Undo last commit AND DELETE the changes. DESTRUCTIVE — no recovery
+    except via reflog.
+
+git reset --hard origin/main
+    Force your local branch to exactly match origin/main. Used to throw
+    away all local commits/changes.
+
+git revert <commit>
+    Create a NEW commit that inverts the given commit. SAFE for shared/
+    pushed history because it doesn't rewrite anything.
+
+git revert HEAD
+    Revert the last commit.
+
+git clean -n
+    PREVIEW which untracked files would be deleted. Always run this first.
+
+git clean -f
+    Actually delete untracked files. -f required because it's destructive.
+
+git clean -fd
+    Also delete untracked directories.
+
+git stash
+    Save your current uncommitted changes (tracked files only) and revert
+    the working tree to clean state. Like a clipboard for changes.
+
+git stash push -m "message"
+    Stash with a description. Highly recommended over plain "git stash".
+
+git stash list
+    Show all stashes. Each has a name like stash@{0}, stash@{1}, ...
+
+git stash pop
+    Apply the most recent stash AND remove it from the stash list.
+
+git stash apply
+    Apply the most recent stash but KEEP it in the stash list (in case you
+    want to apply it again somewhere).
+
+git stash drop stash@{N}
+    Delete a specific stash without applying it.
+
+git stash show -p stash@{N}
+    Show the diff of a stash without applying it.
+
+
+================================================================================
+10. TAGS
+================================================================================
+
+git tag
+    List all tags.
+
+git tag v0.1
+    Create a LIGHTWEIGHT tag. Just a name pointing at a commit. No metadata.
+
+git tag -a v0.1.1 -m "First milestone"
+    Create an ANNOTATED tag with tagger info, date, message. Use this for
+    releases. Stored as a real Git object.
+
+git tag -a v0.1.1 <commit-hash> -m "msg"
+    Tag a specific past commit, not just HEAD.
+
+git show v0.1.1
+    Show the tag info AND the commit it points to.
+
+git push origin v0.1.1
+    Push a single tag to the remote (tags don't push by default!).
+
+git push origin --tags
+    Push ALL local tags to the remote.
+
+git tag -d v0.1
+    Delete a local tag.
+
+git push origin --delete v0.1
+    Delete a tag on the remote.
+
+
+================================================================================
+11. RANGE & REVISION SELECTION SYNTAX (THE CONFUSING PART)
+================================================================================
+
+This is the part that trips most students up on the exam.
+
+HEAD
+    The commit you're currently on (= the tip of your current branch).
+
+HEAD~1                              (or HEAD^)
+    The PARENT of HEAD (one commit back).
+
+HEAD~2
+    Two commits back.
+
+HEAD~5
+    Five commits back.
+
+HEAD^ vs HEAD~
+    For normal commits with one parent, HEAD~ and HEAD^ mean the same thing.
+    For MERGE commits (which have two parents), they differ:
+        HEAD^1  = first parent (the branch you were ON when merging)
+        HEAD^2  = second parent (the branch you merged IN)
+        HEAD~1  = HEAD^1 (always follows first-parent chain)
+
+A..B  (TWO DOTS)
+    "Commits reachable from B but NOT from A."
+    In English: "what does B have that A doesn't?"
+
+    Example: git log main..feature
+        → commits on feature that aren't on main yet (= what your PR will add)
+
+    Example: git log upstream/main..HEAD
+        → commits on your branch that aren't yet on upstream's main
+          (= what you would submit in an MR)
+
+    Example: git diff main..feature
+        → the total diff your feature would introduce
+
+A...B  (THREE DOTS)
+    "Commits reachable from EITHER A or B but NOT BOTH."
+    In English: "what's diverged between them?"
+
+    Example: git log main...feature
+        → commits unique to main + commits unique to feature
+          (= the symmetric difference)
+
+    Used less often than two-dot. Mostly for "show me all the divergence".
+
+A^!  (A and a bang)
+    Just commit A and nothing else. Equivalent to A^..A.
+
+<branch>@{upstream}
+    The remote-tracking branch that <branch> tracks. Often abbreviated @{u}.
+
+@{-1}
+    The previous branch you were on. Same as "git switch -".
+
+EXAMPLES IN PLAIN ENGLISH:
+    git log main..HEAD
+        "Show commits I've made on this branch that aren't on main."
+
+    git log HEAD..main
+        "Show commits on main that I'm missing on this branch."
+
+    git diff origin/main..HEAD
+        "What does my branch change vs origin's main?"
+
+    git log -- README.md
+        "History of just README.md."
+
+    git log main..feature -- README.md
+        "Commits on feature (not main) that touched README.md."
+
+
+================================================================================
+12. REMOTES (ESPECIALLY FORK WORKFLOW)
+================================================================================
+
+git remote -v
+    List all remotes with their URLs.
+
+git remote add <name> <url>
+    Register a new remote. Most common:
+        git remote add upstream git@gitlab.com:original/repo.git
+
+git remote remove <name>
+    Unregister a remote.
+
+git remote rename <old> <new>
+    Rename a remote.
+
+git remote set-url <name> <new-url>
+    Change a remote's URL (e.g., HTTPS → SSH).
+
+FORK WORKFLOW CONVENTIONS:
+    origin   = YOUR fork (you push here)
+    upstream = the ORIGINAL repo (you pull from here)
+
+    Sync your fork's main with upstream:
+        git switch main
+        git fetch upstream
+        git pull --ff-only upstream main
+        git push                                # push to your fork's main
+
+    Update a feature branch with new upstream changes (rebase style):
+        git fetch upstream
+        git rebase upstream/main
+        git push --force-with-lease
+
+
+================================================================================
+13. PUSH SAFETY
+================================================================================
+
+git push
+    Standard push. Refuses if remote has commits you don't have.
+
+git push -u origin <branch>
+    First-time push of a new branch. -u sets upstream tracking.
+
+git push --force
+    DANGEROUS. Overwrites the remote branch even if others have pushed to it.
+    Almost never use this.
+
+git push --force-with-lease
+    SAFER force push. Refuses if the remote has changed since your last fetch.
+    Use this whenever you push a rebased branch.
+
+git push origin :branch                 (or --delete branch)
+    Delete the remote branch.
+
+
+================================================================================
+14. DETACHED HEAD
+================================================================================
+
+git checkout <commit-hash>          (or "git switch --detach <hash>")
+    Goes to a specific commit not on any branch. You're now in "detached
+    HEAD" state — any commits you make won't belong to a branch and can
+    be lost.
+
+WHEN YOU'RE STUCK IN DETACHED HEAD AND HAVE COMMITS:
+    git switch -c rescue-branch
+        → creates a branch from your current commit, saving your work.
+
+WHEN YOU'RE STUCK IN DETACHED HEAD AND DON'T CARE:
+    git switch main
+        → goes back to main, abandons any commits you made (recoverable
+          via reflog for ~30 days).
+
+
+================================================================================
+15. .gitignore PATTERNS
+================================================================================
+
+*.log
+    Ignore all files ending in .log.
+
+build/
+    Ignore the entire "build" folder (and everything in it).
+
+.DS_Store
+    Ignore macOS junk files.
+
+target/
+    Maven build output.
+
+!important.log
+    EXCEPTION — track this file even though *.log is ignored.
+
+NOTES:
+    - .gitignore only affects UNTRACKED files. If a file is already tracked,
+      adding it to .gitignore won't ignore it.
+    - To start ignoring an already-tracked file:
+        git rm --cached <file>
+        # then add to .gitignore and commit
+
+
+================================================================================
+16. GITLAB-SPECIFIC THINGS (FROM LECTURE 5)
+================================================================================
+
+PROTECTED BRANCHES:
+    Project → Settings → Repository → Protected branches
+    Set main:
+        - Allowed to push: Maintainers (or No one)
+        - Allowed to merge: Developers + Maintainers
+        - Force push: disabled
+    Test it: try git push origin main as a Developer → should be rejected.
+
+MR TEMPLATE:
+    File path: .gitlab/merge_request_templates/Default.md
+    Auto-loaded into the description box of every new MR.
+    Multiple templates? Pick from the dropdown when opening an MR.
+
+MINIMAL .gitlab-ci.yml:
+    stages:
+      - validate
+
+    validate:
+      stage: validate
+      script:
+        - echo "CI is running"
+
+    File MUST be at repo root, MUST be valid YAML (2-space indent, no tabs).
+
+FORK FROM UI:
+    Repo page → Fork button → choose destination namespace.
+    The fork has its own URL but Git remembers the parent.
+
+AUTO-CLOSE ISSUE FROM MR:
+    Put "Closes #N" or "Fixes #N" in the MR description.
+    When the MR is merged into the default branch, the issue auto-closes.
+
+GROUPS AS TEAMS:
+    Top-nav → Groups → New group.
+    Mention them in MR descriptions like @devops, @qa.
+
+
+================================================================================
+17. COMMIT MESSAGE CONVENTIONS (CONVENTIONAL COMMITS)
+================================================================================
+
+Format:
+    <type>: <short description>
+
+Common types:
+    feat:     a new feature
+    fix:      a bug fix
+    docs:     documentation only
+    chore:    tooling, dependencies, no production code change
+    refactor: code change that doesn't add features or fix bugs
+    test:     adding or fixing tests
+    ci:       CI/CD config changes
+    style:    whitespace, formatting (no logic change)
+
+Examples:
+    docs: add README
+    chore: add gitignore
+    feat: add login page
+    fix: handle empty config
+    ci: add minimal pipeline
+
+
+================================================================================
+18. QUICK PROBLEM → COMMAND LOOKUP
+================================================================================
+
+"I edited a file but want to throw it away"           → git restore <file>
+"I staged a file but want to unstage it"              → git restore --staged <file>
+"I committed but didn't push, want to undo"           → git reset --mixed HEAD~1
+"I committed AND pushed, want to undo"                → git revert HEAD
+"I want to redo the last commit message"              → git commit --amend -m "new"
+"I'm in detached HEAD with commits I want to keep"    → git switch -c rescue
+"I lost a commit completely"                          → git reflog → find SHA → git switch -c saved <sha>
+"I want my branch up to date with main (clean)"       → git fetch && git rebase origin/main
+"I want my branch up to date with main (safe)"        → git fetch && git merge origin/main
+"I'm working on the wrong branch"                     → git stash → git switch right-branch → git stash pop
+"I forgot what I changed"                             → git status, git diff
+"I want to see what's on my branch vs main"           → git log main..HEAD
+"I want to see what main has that I don't"            → git log HEAD..main
+"There's a conflict and I want my version"            → git checkout --ours <file>
+"There's a conflict and I want their version"         → git checkout --theirs <file>
+"I want to delete junk untracked files"               → git clean -n (preview) → git clean -f
+"Someone pushed to my branch while I rebased"         → git push --force-with-lease
+"main moved while I worked"                           → git fetch && git rebase origin/main
+
+
+================================================================================
+19. THE CANONICAL FEATURE-BRANCH WORKFLOW (MEMORIZE THIS)
+================================================================================
+
+# 1. Start from up-to-date main
+git switch main
+git pull --ff-only
+
+# 2. Branch off
+git switch -c feature/<topic>
+
+# 3. Work in small commits
+# ... edit files ...
+git add <file>
+git commit -m "feat: short description"
+
+# 4. Push
+git push -u origin feature/<topic>
+
+# 5. (GitLab UI) Open a Merge Request
+
+# 6. If main moves while your MR is open:
+git fetch origin
+git rebase origin/main           # OR: git merge origin/main
+git push --force-with-lease      # only needed if you rebased
+
+# 7. (GitLab UI) Squash merge, delete source branch
+
+# 8. Clean up locally
+git switch main
+git pull --ff-only
+git branch -d feature/<topic>
+
+
+================================================================================
+20. LAST-MINUTE BRAIN-DUMP (EXAM ESSENTIALS)
+================================================================================
+
+Three places where work lives:
+    Working tree  → your edited files on disk
+    Index/Staging → "git add" puts files here, ready to commit
+    Repository    → "git commit" puts staged files here permanently
+
+Three places work can come FROM:
+    Local repo  → your machine
+    origin      → your remote (usually your fork or your repo)
+    upstream    → the source repo (in fork workflow)
+
+Local-only operations (never affect remote):
+    git add, git commit, git stash, git branch, git tag (until pushed),
+    git reset, git rebase (until pushed), git switch, git restore
+
+Operations that touch remote:
+    git push, git pull, git fetch, git clone
+
+Operations that REWRITE history (dangerous on shared branches):
+    git commit --amend, git rebase, git reset --hard, git push --force
+
+Operations that ADD to history (always safe):
+    git commit, git merge, git revert, git tag
+
+================================================================================
+END OF CONSPECT — Good luck on the midterm!
+================================================================================
