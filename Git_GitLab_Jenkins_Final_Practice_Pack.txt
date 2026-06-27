@@ -1,0 +1,1306 @@
+Git, GitLab, Jenkins & Puppet — Final Practice Pack
+Version Control and Continuous Integration
+
+This pack contains 10 practice variants that cover everything from Lectures 1–5 plus the Distributed Git / Fork Workflow lab (Variants 1–5, all from before the midterm), and the post-midterm material: GitLab CI pipelines, staged CI models, Jenkins on AWS, Jenkins + Maven CI/CD, and Puppet infrastructure (Variants 6–10). Each variant is scoped to roughly the same size as your real lab exercises so you can do them end-to-end in one sitting.
+
+How to use this pack
+1.	Pick ONE variant and do it start-to-finish without peeking at the answer key.
+2.	Use a disposable repo (or a sandbox branch) so you can practice destructive operations freely.
+3.	At the end, run the verification checklist at the bottom of the variant — if every command returns what is expected, you passed.
+4.	If something fails, look at the Answer Key for that variant ONLY AFTER you have tried to debug it yourself.
+
+Topic coverage map (quick reference)
+•	Variant 1 — Setup, local commits, safe undo (Lectures 1 & 2)
+•	Variant 2 — Branching & merging with real conflicts (Lecture 3)
+•	Variant 3 — Remote branches, MR flow, rebase vs merge (Lecture 4)
+•	Variant 4 — GitLab governance: protected branches, MR template, CI (Lecture 5)
+•	Variant 5 — Fork workflow, stash, upstream sync, revision selection (Lecture 6 lab)
+•	Variant 6 — GitLab CI bootstrap: first pipeline, refs, tags, policy gates (post-midterm L1)
+•	Variant 7 — Staged CI models: rules, MR vs branch vs tag, manual gates (post-midterm L2)
+•	Variant 8 — Jenkins on AWS: install, stabilize, first pipeline (post-midterm L3+L4)
+•	Variant 9 — Jenkins + Maven CI/CD: build, test, deploy via systemd, smoke test (post-midterm L5+L6)
+•	Variant 10 — Puppet infrastructure: two-pipeline design, infra-apply (post-midterm L7)
+
+Tip before you start
+💡 Create a scratch folder ~/git-midterm-prep and work inside it. Each variant assumes you cd into a subfolder so your main course repo stays clean. For Variants 8–10 you need access to your AWS Academy VM with Jenkins installed.
+ 
+Variant 1 — Foundations: Setup, First Commits, Safe Undo
+Scenario: A colleague just got a new Windows machine and asked you to bootstrap a small repo for them called mini-site. You will configure Git, build a small history, then practice undoing mistakes safely.
+
+Tasks
+☐	Verify Git is installed and show its version.
+☐	Configure your global identity (name + email) and set the default branch name to main.
+☐	Create a new repo mini-site and add a README.md with a title and one paragraph.
+☐	Make a SECOND commit that adds a .gitignore ignoring *.log and a build/ folder.
+☐	Make a THIRD commit that adds index.html with a simple <h1>.
+☐	View history compactly on one line with graph + decorations.
+☐	Edit README.md and DO NOT stage it. Then discard the edit and confirm the file is clean.
+☐	Edit README.md, STAGE it, then UNSTAGE it (the edit should still exist in the working tree).
+☐	Create an alias lg for the pretty log command you just used.
+☐	Create a lightweight tag v0.1 and an annotated tag v0.1.1 with message "First milestone".
+
+Verification Checklist
+•	git log --oneline shows exactly 3 commits.
+•	git status is clean at the end.
+•	git tag lists both v0.1 and v0.1.1.
+•	git show v0.1.1 shows a tagger, date, and the message "First milestone".
+•	git show v0.1 does NOT show a tagger line (because it's lightweight).
+•	git lg works as an alias.
+•	git config --global --get-regexp alias lists alias.lg.
+
+Answer Key — Variant 1
+Setup
+git --version
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main
+git config --global --list
+Repo + three commits
+mkdir mini-site && cd mini-site
+git init
+printf "# Mini Site\n\nPersonal demo repo.\n" > README.md
+git add README.md
+git commit -m "docs: add README"
+
+printf "*.log\nbuild/\n" > .gitignore
+git add .gitignore
+git commit -m "chore: add gitignore"
+
+printf "<h1>Hello</h1>\n" > index.html
+git add index.html
+git commit -m "feat: add index page"
+History view
+git log --oneline --decorate --graph --all
+Safe undo — unstaged edit
+echo "accidental" >> README.md
+git status            # shows modified, NOT staged
+git diff              # shows the added line
+git restore README.md # discards working-tree change
+git status            # clean
+Safe undo — unstage a staged edit
+echo "oops" >> README.md
+git add README.md
+git status                    # shows staged change
+git restore --staged README.md
+git status                    # shows modified again, not staged
+git restore README.md         # optional: also discard working tree
+💡 Remember: git restore --staged unstages; git restore (without --staged) discards the working-tree change. Two different things.
+Alias
+git config --global alias.lg "log --oneline --decorate --graph --all"
+Tags
+git tag v0.1                             # lightweight
+git tag -a v0.1.1 -m "First milestone"   # annotated
+git tag
+git show v0.1.1
+ 
+Variant 2 — Branching, Merging, and a Real Conflict
+Scenario: Inside any existing repo (use mini-site from Variant 1, or create a fresh sandbox repo), two teammates touched the same config line. You must produce a clean merge on main and resolve the conflict intentionally.
+
+Tasks
+☐	Starting from main, create branch feature/welcome, add one meaningful line to README.md, commit, and merge it back into main (push if you're using a remote).
+☐	On main, create config.env with two lines: KEY1=base and KEY2=base. Commit.
+☐	Create branch conflict/a — change KEY1 to KEY1=alpha, commit.
+☐	Create branch conflict/b from main (not from conflict/a!) — change KEY1 to KEY1=beta, commit.
+☐	Merge conflict/a into main (fast-forward or merge commit — either is fine).
+☐	Merge conflict/b into main — this MUST produce a conflict in config.env.
+☐	Resolve the conflict so final content is exactly: KEY1=beta and KEY2=base (no conflict markers). Complete the merge.
+☐	Show the commit graph and confirm main has a merge commit with TWO parents.
+☐	Record the merge-base of main and conflict/b BEFORE your final merge (hint: you had to capture it before merging — do it on a fresh pair of branches if you missed it).
+☐	Create a "bad commit" on main (add a line "typo!!!" to README.md) and undo it using git revert.
+
+Verification Checklist
+•	cat config.env prints exactly KEY1=beta and KEY2=base on two lines, nothing else — no <<<<<<< or >>>>>>> markers.
+•	git status is clean.
+•	git log --oneline --graph --all shows a diamond shape: main splits into conflict/a and conflict/b and they rejoin.
+•	git log --merges shows at least one merge commit.
+•	git show <merge-commit-hash> shows two lines starting with Merge: <sha1> <sha2>.
+•	git log --oneline shows a revert commit with message starting with Revert:.
+•	cat README.md no longer contains the line typo!!!.
+
+Answer Key — Variant 2
+Simple branch + merge
+git switch main
+git switch -c feature/welcome
+echo "Welcome to the demo." >> README.md
+git add README.md && git commit -m "docs: welcome line"
+git switch main
+git merge feature/welcome
+Setting up the conflict
+# on main
+printf "KEY1=base\nKEY2=base\n" > config.env
+git add config.env && git commit -m "chore: add config.env"
+
+git switch -c conflict/a
+sed -i 's/KEY1=base/KEY1=alpha/' config.env
+git commit -am "config: set KEY1=alpha"
+
+git switch main
+git switch -c conflict/b
+sed -i 's/KEY1=base/KEY1=beta/' config.env
+git commit -am "config: set KEY1=beta"
+Triggering and resolving the conflict
+git switch main
+git merge conflict/a           # fast-forwards, no conflict
+git merge conflict/b           # CONFLICT in config.env
+git status                      # shows both modified
+# open config.env, remove <<<<<<<, =======, >>>>>>> markers,
+# leave KEY1=beta and KEY2=base
+git add config.env
+git commit                     # completes the merge commit
+git log --oneline --graph --all
+💡 Alternative using the built-in technique from lab B2: git checkout --theirs config.env && git add config.env && git commit. "theirs" here means the branch you are merging IN (conflict/b).
+Recording the merge-base
+git merge-base main conflict/b   # run this BEFORE the final merge
+The hash it prints is the last commit main and conflict/b had in common. In a diamond history it should point to the commit where conflict/b branched off.
+Revert a bad commit
+git switch main
+echo "typo!!!" >> README.md
+git add README.md && git commit -m "docs: oops"
+git revert HEAD                # creates a new commit that inverts the bad one
+git log --oneline -4
+💡 Revert is the right tool AFTER you've pushed. Reset rewrites history and is only safe on commits that exist nowhere else.
+ 
+Variant 3 — Remote Branches, MR Flow, Rebase vs Merge
+Scenario: Use your GitLab app repo (vc-ci-<group>-<studentID>-app) or any private GitLab project you control. You will simulate the classic situation where main moves forward while you're working on a feature branch, and practice BOTH ways of updating your branch.
+
+Tasks
+☐	On main: pull latest, then confirm main is up to date with origin/main (git branch -vv).
+☐	Create branch feature/notes-a, append a line to README.md, push with -u, and open a Merge Request in the GitLab UI. Do NOT merge it yet.
+☐	Back on main, create a SECOND branch feature/notes-b, add a different line to README.md, push, open MR, and SQUASH MERGE this one into main via GitLab UI. Delete the source branch.
+☐	Locally: switch to main and update it (git pull --ff-only). main has now moved forward since you created feature/notes-a.
+☐	Update feature/notes-a using MERGE strategy (git merge origin/main into it). Resolve any conflict. Push.
+☐	Now REDO the same scenario but with a third branch feature/notes-c and update it using REBASE instead. Push with --force-with-lease.
+☐	Squash-merge feature/notes-a and feature/notes-c via MR.
+☐	Tag main with annotated tag v0.5 and push the tag.
+
+Verification Checklist
+•	git branch -vv on main shows [origin/main] with no "ahead" or "behind".
+•	In the GitLab UI, the main branch history shows a linear chain of squashed commits (because you used squash merges).
+•	For feature/notes-a: git log --oneline feature/notes-a (before it was merged) showed a MERGE commit — evidence you used the merge strategy.
+•	For feature/notes-c: git log --oneline feature/notes-c (before it was merged) showed NO merge commit and the feature commits sat on top of origin/main — evidence of rebase.
+•	git tag --list | grep v0.5 returns v0.5.
+•	git show v0.5 shows a tagger, date, and your annotation message.
+
+Answer Key — Variant 3
+Starting point
+git switch main
+git pull --ff-only
+git branch -vv
+git remote -v
+Two parallel feature branches
+git switch -c feature/notes-a
+printf "\n- Note A\n" >> README.md
+git commit -am "docs: note A"
+git push -u origin feature/notes-a
+# GitLab UI: open MR (do NOT merge)
+
+git switch main
+git switch -c feature/notes-b
+printf "\n- Note B\n" >> README.md
+git commit -am "docs: note B"
+git push -u origin feature/notes-b
+# GitLab UI: open MR, SQUASH MERGE, delete source branch
+Update feature/notes-a via MERGE
+git switch main
+git pull --ff-only                 # main now has note B
+git switch feature/notes-a
+git fetch origin
+git merge origin/main              # creates a merge commit on your branch
+# if conflict in README.md: resolve, git add, git commit
+git push
+Update feature/notes-c via REBASE
+git switch main
+git pull --ff-only
+git switch -c feature/notes-c
+printf "\n- Note C\n" >> README.md
+git commit -am "docs: note C"
+git push -u origin feature/notes-c
+
+# Pretend someone else pushes to main here — merge feature/notes-a via MR,
+# then locally:
+git switch main && git pull --ff-only
+git switch feature/notes-c
+git fetch origin
+git rebase origin/main             # replays your commits ON TOP of new main
+# if conflict: resolve, git add, git rebase --continue
+git push --force-with-lease        # required: rebase rewrote commit SHAs
+💡 --force-with-lease is safer than --force: it refuses to overwrite the remote branch if someone else pushed to it since your last fetch. Use it every time you push a rebased branch.
+Tagging the milestone
+git switch main
+git pull --ff-only
+git tag -a v0.5 -m "Lecture 4 milestone"
+git push origin v0.5
+git show v0.5
+Merge vs Rebase — what to look for
+•	MERGE keeps an extra "Merge branch 'main' into feature/notes-a" commit on your branch. History is a diamond. Safe, never rewrites.
+•	REBASE replays your commits with new SHAs on top of main. History is linear. Requires --force-with-lease to push.
+•	Rule of thumb: rebase your OWN feature branch before merging. Never rebase main, and never rebase a branch others are basing work on.
+ 
+Variant 4 — GitLab Governance (Protected Branches, MR Template, CI)
+Scenario: You've been asked to make the app repo look like a real corporate project. All of this is done in the GitLab UI plus committing config files in the repo. Free-tier features only.
+
+Tasks
+☐	In your personal namespace, create 3 GitLab groups simulating teams: devs, devops, qa. Add yourself as a member of each.
+☐	In the APP repo → Settings → Repository → Protected branches: make main protected so that only Maintainers can push AND force push is disabled. Enable auto-delete source branch after merge if shown.
+☐	Prove main is protected: try to push a commit directly to main from your local machine as a Developer and confirm it is rejected.
+☐	In the APP repo, on a feature branch feature/mr-template, create file .gitlab/merge_request_templates/Default.md with sections: Summary, Work Item, Risk, Testing Evidence, Security Checklist, Rollback Plan, Reviewers. Push, open MR, squash merge to main.
+☐	Verify the template: open a NEW MR — the description box should be pre-filled with your template.
+☐	On a feature branch feature/ci, add .gitlab-ci.yml with a single stage validate that runs echo "CI is running". Push and confirm a pipeline runs on the MR.
+☐	Do a full corporate MR flow: branch feature/VC-101-governance-demo, small README change, open MR, apply the Default template, mention @devops and @qa, wait for pipeline green, squash merge.
+
+Verification Checklist
+•	GitLab UI shows 3 groups: devs, devops, qa.
+•	APP repo → Settings → Repository → Protected branches shows main with "Allowed to push" restricted (typically Maintainers only) and force push off.
+•	Direct git push origin main from a Developer fails with a "protected branch" error message.
+•	The file .gitlab/merge_request_templates/Default.md exists on main.
+•	Creating a new MR pre-fills the description with the template content.
+•	.gitlab-ci.yml on main triggers a pipeline and it passes (green).
+•	MR for VC-101 was merged and its source branch auto-deleted.
+
+Answer Key — Variant 4
+Groups
+In GitLab: top-nav → Groups → New group. Make three (devs, devops, qa) under your personal namespace. Use each group page → Members → Invite → yourself as Owner (or leave as default, you're already the creator).
+Protected main
+•	Project → Settings → Repository → Expand "Protected branches".
+•	Branch: main. Allowed to merge: Developers + Maintainers. Allowed to push: Maintainers (or No one).
+•	Toggle off force-push if visible.
+•	Enable "Auto-delete source branch after merge" under General → Merge requests.
+Prove protection works
+git switch main
+echo "direct push test" >> README.md
+git commit -am "test: should be rejected"
+git push origin main
+# Expected: remote: GitLab: You are not allowed to push code to protected branches on this project.
+# Undo the local commit so main isn't ahead:
+git reset --hard origin/main
+MR template file
+git switch main && git pull --ff-only
+git switch -c feature/mr-template
+mkdir -p .gitlab/merge_request_templates
+cat > .gitlab/merge_request_templates/Default.md <<'EOF'
+# Summary
+<!-- What changed and why? -->
+
+## Work Item (required)
+VC-___
+
+## Risk
+- [ ] Low
+- [ ] Medium
+- [ ] High
+
+## Testing Evidence
+
+## Security Checklist
+- [ ] No secrets/tokens committed
+- [ ] Dependencies unchanged OR reviewed
+- [ ] No suspicious shell scripts added
+
+## Rollback Plan
+
+## Reviewers
+- Requested: @devops @qa
+EOF
+git add .gitlab/
+git commit -m "chore: add MR template"
+git push -u origin feature/mr-template
+# GitLab UI: open MR, squash merge, delete branch
+Minimal CI
+git switch main && git pull --ff-only
+git switch -c feature/ci
+cat > .gitlab-ci.yml <<'EOF'
+stages:
+  - validate
+
+validate:
+  stage: validate
+  script:
+    - echo "CI is running"
+EOF
+git add .gitlab-ci.yml
+git commit -m "ci: add minimal pipeline"
+git push -u origin feature/ci
+# GitLab UI: open MR — Pipelines tab should show one running/green
+# Squash merge to main
+💡 Common mistakes: YAML indentation (use 2 spaces, not tabs); missing colon after stage name; .gitlab-ci.yml not at the repo root.
+Full MR flow for VC-101
+git switch main && git pull --ff-only
+git switch -c feature/VC-101-governance-demo
+printf "\n## Governance demo\nThis change exercises the MR template and CI gate.\n" >> README.md
+git add README.md && git commit -m "docs: VC-101 governance demo"
+git push -u origin feature/VC-101-governance-demo
+# GitLab UI:
+# - Open MR, confirm template is pre-filled
+# - Fill in Work Item: VC-101, Risk: Low, etc.
+# - Mention @devops and @qa in the description
+# - Wait for pipeline to be green
+# - Squash merge, confirm source branch is auto-deleted
+ 
+Variant 5 — Fork Workflow, Stash, Upstream Sync, Revision Selection
+Scenario: You are an external contributor to a repo you don't own directly. You will fork, set two remotes, get interrupted mid-work, stash, sync with upstream, and produce two clean commits suitable for review.
+
+Tasks
+☐	In GitLab, fork your APP repo into your devs group (or another namespace you control). This fork is origin for this variant.
+☐	Clone the fork locally. Verify origin points to the fork.
+☐	Add the ORIGINAL repo as a second remote called upstream. Verify git remote -v shows both.
+☐	In the UPSTREAM repo UI, create an Issue titled "VC-201: Improve repo docs" with label docs. Note the issue ID.
+☐	In your local fork clone, create branch feature/VC-201-docs. Edit README.md to add a "## Purpose" paragraph AND edit docs/WORKFLOW.md to clarify the branch-naming rule. (If docs/WORKFLOW.md doesn't exist yet, create it.)
+☐	Use interactive staging (git add -p) to split these edits into TWO separate commits: one for README, one for WORKFLOW.
+☐	Push the branch to your fork. Open an MR from your fork → upstream main with "Closes #<issue-id>" in the description.
+☐	Context switch: start editing index.html (or README again) — do not commit. Stash it with a clear message.
+☐	Create an untracked junk file temp.log, PREVIEW what git clean would remove with -n, then clean it with -f.
+☐	Switch to main, fetch upstream, fast-forward main from upstream/main, then switch back to the feature branch and pop the stash.
+☐	Update your feature branch to be on top of the latest upstream/main by REBASING. Push with --force-with-lease.
+☐	Run the four revision-selection commands listed in the answer key and confirm each one makes sense to you.
+
+Verification Checklist
+•	git remote -v shows TWO remotes: origin → your fork, upstream → the original repo.
+•	git log --oneline feature/VC-201-docs shows exactly TWO commits on top of the base — not one big squashed commit, not three.
+•	git stash list is empty at the end (you popped it).
+•	temp.log does not exist on disk and does not appear in git status.
+•	main is a strict fast-forward of upstream/main (git log --oneline main..upstream/main is empty).
+•	git log --oneline upstream/main..feature/VC-201-docs shows ONLY your two commits.
+•	git log --oneline --graph --all shows your feature branch sitting cleanly on the tip of upstream/main (no merge commit from upstream).
+•	The MR in the upstream repo is open and references the issue with a "Closes #N" link that will auto-close it on merge.
+
+Answer Key — Variant 5
+Fork + two remotes
+# GitLab UI: APP repo → Fork → pick destination (your devs group)
+# Grab the SSH/HTTPS URL of the fork
+git clone git@gitlab.com:<your-ns>/<fork-name>.git
+cd <fork-name>
+git remote -v                          # origin = fork
+git remote add upstream git@gitlab.com:<original-ns>/<orig-name>.git
+git remote -v                          # both origin and upstream
+git fetch upstream
+Feature branch with two clean commits via git add -p
+git switch -c feature/VC-201-docs
+# edit README.md — add a ## Purpose section
+# edit docs/WORKFLOW.md — clarify branch naming
+git status
+git add -p README.md                   # stage only the README hunks
+git commit -m "docs: clarify README purpose"
+git add -p docs/WORKFLOW.md            # stage the WORKFLOW hunks
+git commit -m "docs: clarify branch naming rule"
+git log --oneline                      # should show exactly two new commits
+git push -u origin feature/VC-201-docs
+💡 git add -p interactive keys: y = yes, n = no, s = split a big hunk into smaller ones, q = quit. If the diff is too coarse, press s to split then y/n the pieces.
+Stash + clean during an interruption
+echo "WIP investigation" >> README.md
+git status
+git stash push -m "wip: interrupted work"
+
+echo "junk" > temp.log
+git clean -n                           # PREVIEW — shows 'Would remove temp.log'
+git clean -f                           # actually removes it
+Sync main from upstream, then pop stash
+git switch main
+git fetch upstream
+git pull --ff-only upstream main       # refuses if main diverged — good!
+git switch feature/VC-201-docs
+git stash pop
+git stash list                          # empty
+Rebase feature branch onto updated upstream/main
+git fetch upstream
+git rebase upstream/main
+# resolve conflicts if any: git add <file> && git rebase --continue
+git push --force-with-lease
+Revision selection — four views of your work
+git log --oneline --decorate --graph --all
+git log --oneline upstream/main..HEAD    # commits on my branch NOT in upstream/main
+git diff upstream/main..HEAD             # total diff of my branch vs upstream/main
+git log -- README.md                     # history of one file only
+💡 Range syntax A..B means "commits reachable from B but not from A". It's the cleanest way to ask "what have I added on top of the base branch?"
+ 
+Variant 6 — GitLab CI Bootstrap: First Pipeline, Refs, Tags, Policy Gates
+Scenario: Your APP repo has Git workflow and protected branches set up. Now you need to add CI: a pipeline that runs on every Merge Request, enforces a simple compliance rule (a "policy gate"), and ALSO runs again when you cut a release tag. You will intentionally break the gate, read the failure, and fix it.
+
+Tasks
+☐	Update local main and create branch feature/ci-bootstrap.
+☐	Add .gitlab-ci.yml at the repo root with TWO stages — validate (prints CI_COMMIT_REF_NAME and CI_COMMIT_SHA, lists files) and policy (requires README.md to contain the line CI_GATE_OK).
+☐	Commit and push the branch. Open a Merge Request to main.
+☐	BREAK IT FIRST: ensure README.md does NOT contain CI_GATE_OK. Push a commit that edits README without adding the line. Confirm the pipeline goes RED in the MR.
+☐	In the GitLab UI, drill into the failing job and find the exact failing command in the log.
+☐	FIX IT: add a line CI_GATE_OK to README, commit, push. Confirm the pipeline turns GREEN.
+☐	Squash-merge the MR into main and delete the source branch.
+☐	Pull main, then create annotated tag v0.7 with message "CI runs on tag" and push the tag.
+☐	Open the tag pipeline in GitLab and record what CI_COMMIT_REF_NAME prints — it should be v0.7, not main.
+☐	Explain in one sentence (in a NOTES.md commit) why tags are preferred for releases over branches.
+
+Verification Checklist
+•	.gitlab-ci.yml is on main, at the repo root, with stages: validate and policy.
+•	The MR Pipelines tab shows BOTH a failed pipeline (before the fix) and a green one (after).
+•	The job log of the failing policy_check job shows the failing grep line.
+•	After tag push, GitLab → Repository → Tags lists v0.7 with the annotation message.
+•	A pipeline ran for tag v0.7 — visible under CI/CD → Pipelines, with Ref column showing v0.7.
+•	In that tag pipeline's job log, the line "Pipeline ref name: v0.7" appears.
+
+Answer Key — Variant 6
+Bootstrap a feature branch
+cd ~/vc-ci-course/vc-ci-<group>-<studentID>-app
+git switch main
+git pull --ff-only
+git switch -c feature/ci-bootstrap
+Create .gitlab-ci.yml at repo root
+cat > .gitlab-ci.yml <<'EOF'
+stages:
+  - validate
+  - policy
+
+validate:
+  stage: validate
+  script:
+    - echo "Pipeline ref name: $CI_COMMIT_REF_NAME"
+    - echo "Commit SHA: $CI_COMMIT_SHA"
+    - echo "List files:"
+    - ls -la
+
+policy_check:
+  stage: policy
+  script:
+    - test -f README.md
+    - grep -q "CI_GATE_OK" README.md
+EOF
+git add .gitlab-ci.yml
+git commit -m "ci: add initial pipeline with policy gate"
+git push -u origin feature/ci-bootstrap
+# GitLab UI: open MR to main, confirm pipeline starts
+Intentionally fail (read the error)
+echo "\nThis change should fail the policy gate." >> README.md
+git add README.md
+git commit -m "docs: update README (expect CI failure)"
+git push
+# GitLab UI: MR Pipelines tab → red pipeline → click policy_check job →
+# expected failure line: grep -q "CI_GATE_OK" README.md  → exit code 1
+💡 Reading CI logs: the LAST line that starts with $ is usually the command that failed. The "exit code" right after it tells you how it failed (1 = grep found nothing, 127 = command not found, etc.).
+Satisfy the gate
+echo "CI_GATE_OK" >> README.md
+git add README.md
+git commit -m "docs: satisfy CI policy gate"
+git push
+# Pipeline turns green → squash merge MR → delete source branch
+Tag the release (CI runs on the tag too)
+git switch main
+git pull --ff-only
+git tag -a v0.7 -m "CI runs on tag"
+git push origin v0.7
+# GitLab UI: CI/CD → Pipelines → look for one with Ref = v0.7
+# Open the validate job log → it should print: Pipeline ref name: v0.7
+Why tags for releases (one sentence)
+echo "Tags are immutable refs: once pushed, v0.7 always points to the exact same commit, so CI can rebuild the same release indefinitely. Branches keep moving." > NOTES.md
+git add NOTES.md && git commit -m "docs: explain tag vs branch for releases"
+git push origin main   # only if main isn't protected; otherwise do it via MR
+💡 Predefined CI variables you'll see all the time: CI_COMMIT_REF_NAME (branch or tag name), CI_COMMIT_SHA (full commit hash), CI_COMMIT_TAG (set ONLY on tag pipelines — useful in rules), CI_PIPELINE_SOURCE (push, merge_request_event, schedule, web, ...).
+ 
+Variant 7 — Staged CI Models: Rules, MR vs Branch vs Tag, Manual Gate
+Scenario: Your minimal pipeline runs the same jobs on every push, which is wasteful. Your tech lead wants three CI models in one .gitlab-ci.yml: (A) fast checks on every branch/MR, (B) slow checks ONLY on MRs, (C) release packaging ONLY on tags — plus a MANUAL "promote" job that a human must click before the release is considered shipped.
+
+Tasks
+☐	Update main and create branch feature/ci-models.
+☐	Replace .gitlab-ci.yml with a pipeline using THREE stages — fast, slow, release.
+☐	Job lint_fast in stage fast: runs always, checks README.md exists.
+☐	Job unit_fast in stage fast: runs always, prints OK.
+☐	Job integration_slow in stage slow: runs ONLY when $CI_PIPELINE_SOURCE == "merge_request_event" (MR pipelines only).
+☐	Job package_release in stage release: runs ONLY when $CI_COMMIT_TAG is set (tag pipelines only). Creates out/version.txt and uploads it as an artifact.
+☐	Job promote_manual in stage release: same tag-only rule, plus when: manual — requires a human click in the UI.
+☐	Commit, push, open MR. Confirm in the MR pipeline that fast + slow jobs ran.
+☐	Push another commit to the branch (without an MR pipeline update) and confirm integration_slow does NOT run on the plain branch pipeline.
+☐	Squash-merge to main. Tag v0.8 and push.
+☐	Confirm the tag pipeline ran package_release (with artifact). Click Play on promote_manual to release.
+
+Verification Checklist
+•	.gitlab-ci.yml on main contains rules: blocks with if: $CI_PIPELINE_SOURCE == "merge_request_event" and if: $CI_COMMIT_TAG.
+•	MR pipeline shows lint_fast + unit_fast + integration_slow as jobs that ran (green).
+•	Branch-push pipeline (no MR) shows ONLY lint_fast + unit_fast — integration_slow is absent.
+•	Tag v0.8 pipeline shows package_release (ran automatically) AND promote_manual (waiting on manual play).
+•	After clicking Play on promote_manual, it goes green.
+•	Job package_release archived out/version.txt — visible in the job's Artifacts panel, contains "v0.8".
+
+Answer Key — Variant 7
+Branch + pipeline file
+git switch main && git pull --ff-only
+git switch -c feature/ci-models
+
+cat > .gitlab-ci.yml <<'EOF'
+stages:
+  - fast
+  - slow
+  - release
+
+# FAST: run on every branch and every MR
+lint_fast:
+  stage: fast
+  script:
+    - echo "FAST: lint/format placeholder"
+    - test -f README.md
+
+unit_fast:
+  stage: fast
+  script:
+    - echo "FAST: unit test placeholder"
+    - echo "OK"
+
+# SLOW: only on merge request pipelines
+integration_slow:
+  stage: slow
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - echo "SLOW: integration/security placeholder (MR only)"
+    - echo "scan OK"
+
+# RELEASE: only on tags
+package_release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "RELEASE: packaging for tag $CI_COMMIT_TAG"
+    - mkdir -p out
+    - echo "$CI_COMMIT_TAG" > out/version.txt
+  artifacts:
+    paths:
+      - out/version.txt
+
+# MANUAL GATE: tag-only AND requires a human click
+promote_manual:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+  when: manual
+  script:
+    - echo "MANUAL GATE: promote release $CI_COMMIT_TAG"
+EOF
+
+git add .gitlab-ci.yml
+git commit -m "ci: add staged pipeline with MR/tag models"
+git push -u origin feature/ci-models
+# GitLab UI: open MR to main
+Confirm model behavior
+# Branch push pipeline (no MR): visit CI/CD → Pipelines → branch pipeline
+#   → only lint_fast + unit_fast ran. integration_slow absent because no MR exists for that pipeline.
+# MR pipeline:
+#   → lint_fast + unit_fast + integration_slow all ran.
+# Squash merge.
+Tag-only release flow + manual gate
+git switch main && git pull --ff-only
+git tag -a v0.8 -m "CI models lab"
+git push origin v0.8
+# GitLab UI: CI/CD → Pipelines → find Ref = v0.8
+#   package_release: ran automatically, click → Artifacts → download out/version.txt
+#   promote_manual: shows a Play button → click it → goes green
+💡 rules: replaces the older only:/except:. The first matching rule wins. To make a job NEVER run on tags: add a rule "if: $CI_COMMIT_TAG, when: never" before your other rules. To explicitly run on push to main: if: $CI_COMMIT_BRANCH == "main".
+💡 when: manual makes a job wait for a human click. It does NOT block later stages by default — to make manual blocking, add allow_failure: false (often the default for manual jobs, but worth checking).
+Reflection (commit it)
+cat > REFLECTION.md <<'EOF'
+- Slow checks run only on MR because every branch push doesn't need a full
+  security scan; MRs are the human review gate.
+- Tags are preferred for releases because they are immutable refs — v0.8 always
+  points to the exact same commit, forever.
+- Manual gates protect us from automated release of an untested artifact: a
+  human must consciously click "promote" to finalize delivery.
+EOF
+git add REFLECTION.md && git commit -m "docs: reflection on CI models"
+ 
+Variant 8 — Jenkins on AWS: Install, Stabilize, First Pipeline
+Scenario: You have a fresh AWS Academy Ubuntu VM. You will install Jenkins, fix the three most common runtime blockers (executors, /tmp size, swap), wire it to your GitLab repo using a Personal Access Token, then run a staged Jenkinsfile that archives a build artifact.
+
+Tasks
+☐	On the VM: install OpenJDK 21, then install Jenkins via the official apt repository.
+☐	Start Jenkins and confirm it listens on port 8080.
+☐	Open http://<public-ip>:8080, unlock with the initial admin password, install the suggested plugins, create an admin user, set the Jenkins URL.
+☐	FIX BLOCKER A: set controller executors to 1 (Manage Jenkins → Nodes → built-in node → # of executors).
+☐	FIX BLOCKER B: resize /tmp tmpfs from default ~953MB to 2G via a systemd drop-in for tmp.mount.
+☐	FIX BLOCKER C: create a 2GB swapfile and persist it in /etc/fstab.
+☐	In GitLab, create a Personal Access Token with read_repository scope. In Jenkins, Manage Jenkins → Credentials → add Username/Password credential with ID gitlab-pat.
+☐	Sanity-check plugins are installed (Manage Jenkins → Plugins → Installed): Pipeline, Git, Credentials.
+☐	On a feature branch feature/jenkins-staged-pipeline in your APP repo, add a Jenkinsfile with stages Checkout, Test, Package, and a post { always { archiveArtifacts ... } } block that captures out/**. Set options { timeout(time: 10, unit: 'MINUTES') } and enable Discard old builds (keep 10) in the job UI.
+☐	In Jenkins: New Item → Pipeline → app-pipeline → Pipeline script from SCM → Git → your repo HTTPS URL → credential gitlab-pat → branch */main → Script Path Jenkinsfile.
+☐	Merge the Jenkinsfile to main, run Build Now, confirm out/build-info.txt is archived as an artifact.
+
+Verification Checklist
+•	java -version shows 21.x; mvn -version works (if installed).
+•	sudo systemctl status jenkins says active (running); ss -ltnp | grep ':8080' shows Jenkins.
+•	df -h /tmp shows 2.0G size; free -h shows 2.0G swap.
+•	Jenkins UI Manage Jenkins → Nodes → built-in node has Executors: 1.
+•	Manage Jenkins → Credentials lists gitlab-pat.
+•	Job app-pipeline → Build #1 console output shows Checkout/Test/Package stages running.
+•	Build #1 page → Artifacts shows out/build-info.txt and you can open it (contains BUILD_TIME, GIT_COMMIT, REF).
+•	Job config shows "Discard old builds" enabled, keep 10.
+
+Answer Key — Variant 8
+Install Java 21 and Jenkins
+ssh -i <key>.pem ubuntu@<public-ip>
+sudo apt-get update -y
+sudo apt-get install -y ca-certificates curl gnupg fontconfig openjdk-21-jre git
+java -version
+git --version
+
+# Jenkins apt repo (official)
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
+  | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update -y
+sudo apt-get install -y jenkins
+
+sudo systemctl enable --now jenkins
+sudo systemctl status jenkins --no-pager
+sudo ss -ltnp | grep ':8080' || echo "Not listening on 8080 (check logs)"
+
+# If startup fails: sudo journalctl -u jenkins -n 120 --no-pager
+First login
+# Browser: http://<public-ip>:8080
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+# Paste, install suggested plugins, create admin user, set Jenkins URL = http://<public-ip>:8080
+Fix Blocker A — executors
+# UI: Manage Jenkins → Nodes → built-in node → Configure → # of executors = 1 → Save
+# Why: if 0, every build hangs forever in "Waiting for next available executor".
+Fix Blocker B — /tmp size (default tmpfs is too small)
+df -h /tmp
+sudo mkdir -p /etc/systemd/system/tmp.mount.d
+sudo tee /etc/systemd/system/tmp.mount.d/override.conf > /dev/null <<'EOF'
+[Mount]
+What=tmpfs
+Where=/tmp
+Type=tmpfs
+Options=mode=1777,nosuid,nodev,size=2G
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart tmp.mount
+df -h /tmp                           # should now show 2.0G
+Fix Blocker C — swap
+free -h
+swapon --show
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+swapon --show && free -h
+GitLab PAT + Jenkins credential
+# GitLab UI: Edit Profile → Access Tokens → name=jenkins-pat → scope: read_repository → create
+# Copy the token (you only see it once)
+# Jenkins UI: Manage Jenkins → Credentials → (global) → Add Credentials
+#   Kind: Username with password
+#   Username: <your GitLab username>
+#   Password: <the PAT>
+#   ID: gitlab-pat
+Staged Jenkinsfile with artifact
+git switch main && git pull --ff-only
+git switch -c feature/jenkins-staged-pipeline
+
+cat > Jenkinsfile <<'EOF'
+pipeline {
+  agent any
+
+  options {
+    timeout(time: 10, unit: 'MINUTES')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Test') {
+      steps {
+        sh 'echo "Running fast checks..."'
+        sh 'test -f README.md'
+      }
+    }
+
+    stage('Package') {
+      steps {
+        sh 'mkdir -p out'
+        sh 'echo "BUILD_TIME=$(date -u)" > out/build-info.txt'
+        sh 'echo "GIT_COMMIT=$(git rev-parse HEAD)" >> out/build-info.txt'
+        sh 'echo "REF=${BRANCH_NAME}" >> out/build-info.txt'
+        sh 'cat out/build-info.txt'
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'out/**', fingerprint: true
+    }
+  }
+}
+EOF
+
+git add Jenkinsfile
+git commit -m "ci: add staged Jenkins pipeline with artifact"
+git push -u origin feature/jenkins-staged-pipeline
+# Merge MR to main
+Create Jenkins job + run
+# Jenkins UI: New Item → Pipeline → name: app-pipeline
+#   Pipeline definition: Pipeline script from SCM
+#   SCM: Git
+#   Repository URL: https://gitlab.com/<your-ns>/<repo>.git
+#   Credentials: gitlab-pat
+#   Branch Specifier: */main      ← NOT */master
+#   Script Path: Jenkinsfile
+#   Save
+# Job page → Configure → check "Discard old builds" → keep 10 builds → Save
+# Build Now → wait → Console Output should show all three stages
+# Build #1 → Artifacts → out/build-info.txt
+💡 Three Jenkins ops mistakes students hit: (1) Branch Specifier still set to */master — change it to */main. (2) Jenkinsfile uses # comments at top level — these are not valid in Groovy; use // instead. (3) archiveArtifacts path doesn't match what stages produced — confirm the path matches your sh commands.
+ 
+Variant 9 — Jenkins + Maven CI/CD: Build, Test, Deploy via systemd, Smoke Test
+Scenario: Your APP repo now contains a Java HTTP service exposing /health. You will add Maven build/test, archive JUnit reports and a stable-named jar, then extend the Jenkinsfile to DEPLOY (CD) by copying the jar to /opt/health-service, restarting a systemd service, and running a smoke test (curl /health expects HTTP 200).
+
+Tasks
+☐	On the Jenkins VM: install openjdk-21-jdk, maven, curl. Verify mvn -version.
+☐	Create deploy folder /opt/health-service (owned by root, 755).
+☐	Install a systemd unit /etc/systemd/system/health-service.service of Type=simple, ExecStart=/usr/bin/java -jar /opt/health-service/app.jar, EnvironmentFile=-/etc/health-service.env, Restart=always. Enable it.
+☐	Create /etc/health-service.env with APP_PORT=8081 and STUDENT_NAME=Student.
+☐	Grant Jenkins a NARROW sudoers rule allowing only the commands it needs (tee, cp, systemctl restart health-service, systemctl status health-service).
+☐	In your APP repo, on branch feature/maven-jenkins: add pom.xml with <finalName>health-service</finalName>, a HealthServer.java that listens on $APP_PORT and serves /health → "OK\n", a SanityTest.java JUnit 5 test, and an additional MessageBuilder + meaningful test that asserts the message contains the student name.
+☐	Replace Jenkinsfile with 5 stages — Checkout, Build & Test (CI) (mvn -B clean test package), Publish (junit + archiveArtifacts of target/health-service.jar), Deploy (CD) (write env, sudo cp jar, sudo systemctl restart, sleep 2), Smoke Test (curl with code=200 assertion).
+☐	Commit, push, merge MR. Run the Jenkins job. Watch all 5 stages go green.
+☐	On the VM, confirm sudo systemctl status health-service is active and curl http://localhost:8081/health returns OK.
+
+Verification Checklist
+•	mvn -B clean test package on the VM produces target/health-service.jar (stable name, no version suffix).
+•	JUnit results page in Jenkins shows ≥ 2 tests passing.
+•	Jenkins build page → Artifacts shows target/health-service.jar.
+•	sudo systemctl status health-service shows active (running).
+•	curl -fsS http://localhost:8081/health prints OK.
+•	curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health returns 200.
+•	Build log of the Smoke Test stage ends with the assertion [ "$code" = "200" ] passing.
+•	The Jenkinsfile's Deploy stage does NOT use any plain text password and only uses the four allowed sudo commands.
+
+Answer Key — Variant 9
+VM one-time setup
+sudo apt-get update -y
+sudo apt-get install -y openjdk-21-jdk maven curl
+java -version && mvn -version
+
+sudo mkdir -p /opt/health-service
+sudo chown -R root:root /opt/health-service
+sudo chmod 755 /opt/health-service
+
+sudo tee /etc/systemd/system/health-service.service > /dev/null <<'EOF'
+[Unit]
+Description=Health Service (training)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/health-service
+EnvironmentFile=-/etc/health-service.env
+ExecStart=/usr/bin/java -jar /opt/health-service/app.jar
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable health-service
+
+echo 'APP_PORT=8081
+STUDENT_NAME=Student' | sudo tee /etc/health-service.env > /dev/null
+
+sudo visudo
+# add exactly this line (one line, narrow scope):
+# jenkins ALL=(ALL) NOPASSWD: /usr/bin/tee, /bin/cp, /bin/systemctl restart health-service, /bin/systemctl status health-service
+Repo changes — pom.xml with stable finalName
+git switch main && git pull --ff-only
+git switch -c feature/maven-jenkins
+
+cat > pom.xml <<'EOF'
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.vcci</groupId>
+  <artifactId>health-service</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <junit.version>5.10.2</junit.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>health-service</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.vcci.HealthServer</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+EOF
+💡 <finalName> = the jar filename. Without it Maven produces health-service-0.1.0-SNAPSHOT.jar (with version), which means the deploy script has to guess the name. With it, you always get target/health-service.jar.
+Application + helper + tests
+mkdir -p src/main/java/com/vcci src/test/java/com/vcci
+
+cat > src/main/java/com/vcci/MessageBuilder.java <<'EOF'
+package com.vcci;
+public class MessageBuilder {
+  public static String rootMessage(String studentName) {
+    if (studentName == null || studentName.isBlank()) studentName = "Student";
+    return "Hello from health-service. Student: " + studentName + "\nTry /health\n";
+  }
+}
+EOF
+
+cat > src/main/java/com/vcci/HealthServer.java <<'EOF'
+package com.vcci;
+import com.sun.net.httpserver.*;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+public class HealthServer {
+  public static void main(String[] args) throws Exception {
+    int port = 8081;
+    String envPort = System.getenv("APP_PORT");
+    if (envPort != null && !envPort.isBlank()) port = Integer.parseInt(envPort);
+
+    String studentName = System.getenv("STUDENT_NAME");
+    if (studentName == null || studentName.isBlank()) studentName = "Student";
+
+    HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+    server.createContext("/health", new HealthHandler());
+    server.createContext("/", new RootHandler(studentName));
+    server.setExecutor(null);
+    System.out.println("HealthServer listening on port " + port);
+    server.start();
+  }
+
+  static class HealthHandler implements HttpHandler {
+    public void handle(HttpExchange e) throws IOException {
+      byte[] body = "OK\n".getBytes(StandardCharsets.UTF_8);
+      e.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
+      e.sendResponseHeaders(200, body.length);
+      try (OutputStream os = e.getResponseBody()) { os.write(body); }
+    }
+  }
+
+  static class RootHandler implements HttpHandler {
+    private final String studentName;
+    RootHandler(String s) { this.studentName = s; }
+    public void handle(HttpExchange e) throws IOException {
+      String msg = MessageBuilder.rootMessage(studentName);
+      byte[] body = msg.getBytes(StandardCharsets.UTF_8);
+      e.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
+      e.sendResponseHeaders(200, body.length);
+      try (OutputStream os = e.getResponseBody()) { os.write(body); }
+    }
+  }
+}
+EOF
+
+cat > src/test/java/com/vcci/SanityTest.java <<'EOF'
+package com.vcci;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SanityTest {
+  @Test void sanity() { assertTrue(true); }
+}
+EOF
+
+cat > src/test/java/com/vcci/MessageBuilderTest.java <<'EOF'
+package com.vcci;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class MessageBuilderTest {
+  @Test void rootMessageContainsName() {
+    String msg = MessageBuilder.rootMessage("Your Name");
+    assertTrue(msg.contains("Your Name"));
+  }
+}
+EOF
+Jenkinsfile (CI + CD + smoke test)
+cat > Jenkinsfile <<'EOF'
+pipeline {
+  agent any
+
+  options {
+    timeout(time: 20, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+  }
+
+  environment {
+    APP_PORT = "8081"
+    STUDENT_NAME = "REPLACE_WITH_YOUR_NAME"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Build & Test (CI)') {
+      steps {
+        sh 'java -version'
+        sh 'mvn -B clean test package'
+      }
+    }
+
+    stage('Publish') {
+      steps {
+        junit 'target/surefire-reports/*.xml'
+        archiveArtifacts artifacts: 'target/health-service.jar', fingerprint: true
+      }
+    }
+
+    stage('Deploy (CD)') {
+      steps {
+        sh '''
+          set -e
+          printf "APP_PORT=%s\nSTUDENT_NAME=%s\n" "$APP_PORT" "$STUDENT_NAME" | sudo tee /etc/health-service.env > /dev/null
+          sudo cp target/health-service.jar /opt/health-service/app.jar
+          sudo systemctl restart health-service
+          sleep 2
+        '''
+      }
+    }
+
+    stage('Smoke Test') {
+      steps {
+        sh '''
+          set -e
+          code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${APP_PORT}/health")
+          [ "$code" = "200" ]
+        '''
+      }
+    }
+  }
+}
+EOF
+
+git add pom.xml src Jenkinsfile
+git commit -m "build: maven stable jar, tests, jenkins publish+deploy"
+git push -u origin feature/maven-jenkins
+# GitLab UI: open MR → merge to main → Jenkins → Build Now
+Verify on the VM
+sudo systemctl status health-service --no-pager
+cat /etc/health-service.env
+curl -fsS http://localhost:8081/health     # OK
+curl -fsS http://localhost:8081/           # Hello from health-service. ...
+💡 What mvn -B clean test package actually does, in order: -B = batch (non-interactive, cleaner CI logs); clean = wipe target/; then walks the default lifecycle through validate → compile → test-compile → test (produces target/surefire-reports/*.xml) → package (produces target/health-service.jar because of <finalName>).
+💡 Sudoers golden rule: never give Jenkins blanket sudo. List EXACT command paths. The four we used are the minimum to write the env file, copy the jar, restart the service, and check its status.
+💡 The Deploy stage stops Jenkins from drifting: if /etc/health-service.env or app.jar gets edited by hand on the VM, the next Jenkins run overwrites them — that's the desired CD property (server state always matches what CI built).
+ 
+Variant 10 — Puppet Infrastructure Apply: Two-Pipeline Design
+Scenario: Until now the app pipeline did everything — built the jar AND wrote the env file AND created the systemd unit AND restarted the service. That mixes application delivery with machine configuration. You will split those concerns: a second repo vc-ci-infra will own Puppet code, and a second Jenkins job infra-apply will run puppet apply to bring the VM to a known state. The app pipeline then keeps only application delivery.
+
+Tasks
+☐	On the VM: install puppet. Verify puppet --version.
+☐	Create vc-ci-infra repo with this structure: Jenkinsfile at the root, plus infra/puppet/environments/production/{manifests/site.pp, modules/role/manifests/app_server.pp, modules/profile/manifests/health_service.pp}.
+☐	Write profile::health_service to manage: package openjdk-21-jre-headless and curl, file /opt/health-service (dir), file /etc/health-service.env (with $student_name parameter), file /etc/systemd/system/health-service.service, and a service { 'health-service': enable => true } resource. Add an Exec that runs systemctl daemon-reload only when the unit file changes (refreshonly + subscribe). Add a second Exec that restarts the service when env or unit changes, but only if /opt/health-service/app.jar exists.
+☐	Wire it via role/app_server.pp (which just includes profile::health_service) and site.pp (which includes role::app_server).
+☐	Write a Jenkinsfile for vc-ci-infra with 3 stages — Checkout, Apply infrastructure with Puppet (cd into infra/puppet/environments/production && sudo puppet apply --modulepath=modules manifests/site.pp), Verify infrastructure (assert files/dir exist, systemctl is-enabled).
+☐	Add the sudoers rule: jenkins ALL=(root) NOPASSWD: /usr/bin/puppet, /bin/systemctl, /usr/bin/systemctl.
+☐	In Jenkins: create job infra-apply pointing at vc-ci-infra. Run Build Now.
+☐	After infra-apply succeeds: REMOVE infra-creating steps from your app pipeline's Deploy stage. The app pipeline should only build, archive, copy the jar, restart, and smoke test.
+☐	Demonstrate the two flows: (a) change app code only → run app-pipeline only; (b) change student name in the Puppet profile → run infra-apply only and confirm the env file changed AND the service auto-restarted.
+
+Verification Checklist
+•	puppet --version prints a version.
+•	vc-ci-infra repo contains all 4 files above.
+•	infra-apply Jenkins job: Build Now → green.
+•	On the VM after running infra-apply: /etc/health-service.env, /opt/health-service, /etc/systemd/system/health-service.service all exist; systemctl is-enabled health-service prints enabled.
+•	Updated app pipeline's Deploy stage does NOT contain tee /etc/health-service.env, mkdir /opt/health-service, or any unit-file creation — only cp target/health-service.jar, systemctl restart, and the smoke test.
+•	Changing the student_name in health_service.pp and re-running infra-apply: cat /etc/health-service.env shows the new name AND the service was restarted (journalctl -u health-service shows a recent restart).
+•	The two pipelines are independent: changing app code does NOT require running infra-apply, and changing Puppet config does NOT trigger a rebuild of the jar.
+
+Answer Key — Variant 10
+Install Puppet on the VM
+sudo apt-get update -y
+sudo apt-get install -y puppet
+puppet --version
+Repo structure
+mkdir -p vc-ci-infra/infra/puppet/environments/production/manifests
+mkdir -p vc-ci-infra/infra/puppet/environments/production/modules/role/manifests
+mkdir -p vc-ci-infra/infra/puppet/environments/production/modules/profile/manifests
+cd vc-ci-infra
+git init
+profile::health_service (the actual configuration)
+cat > infra/puppet/environments/production/modules/profile/manifests/health_service.pp <<'EOF'
+class profile::health_service (
+  Integer $app_port = 8081,
+  String  $student_name = 'REPLACE_WITH_YOUR_NAME',
+) {
+
+  package { ['openjdk-21-jre-headless', 'curl']:
+    ensure => installed,
+  }
+
+  file { '/opt/health-service':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+
+  file { '/etc/health-service.env':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => "APP_PORT=${app_port}\nSTUDENT_NAME=${student_name}\n",
+  }
+
+  file { '/etc/systemd/system/health-service.service':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => @("UNIT")
+[Unit]
+Description=Health Service (training)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/health-service
+EnvironmentFile=-/etc/health-service.env
+ExecStart=/usr/bin/java -jar /opt/health-service/app.jar
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+      | UNIT
+  }
+
+  exec { 'systemd-daemon-reload':
+    command     => '/bin/systemctl daemon-reload',
+    refreshonly => true,
+    subscribe   => File['/etc/systemd/system/health-service.service'],
+  }
+
+  service { 'health-service':
+    enable     => true,
+    hasrestart => true,
+    require    => [
+      Package['openjdk-21-jre-headless'],
+      File['/opt/health-service'],
+      File['/etc/systemd/system/health-service.service'],
+    ],
+  }
+
+  exec { 'restart-health-service-when-config-changes':
+    command     => '/bin/systemctl restart health-service',
+    refreshonly => true,
+    onlyif      => '/usr/bin/test -f /opt/health-service/app.jar',
+    subscribe   => [
+      File['/etc/health-service.env'],
+      File['/etc/systemd/system/health-service.service'],
+    ],
+    require     => Exec['systemd-daemon-reload'],
+  }
+}
+EOF
+💡 Resource ordering vocabulary (the FOUR words to know):
+  require   = "I need X to be applied BEFORE me"   (dependency)
+  before    = "X needs me applied BEFORE it"        (reverse of require)
+  notify    = "if I change, refresh X"              (push)
+  subscribe = "if X changes, refresh me"            (pull, reverse of notify)
+refreshonly => true means "don't run unless a subscribed resource changed". That's how we get "restart only when config changed".
+role::app_server and site.pp
+cat > infra/puppet/environments/production/modules/role/manifests/app_server.pp <<'EOF'
+class role::app_server {
+  include profile::health_service
+}
+EOF
+
+cat > infra/puppet/environments/production/manifests/site.pp <<'EOF'
+include role::app_server
+EOF
+💡 The role/profile pattern: profiles do one thing well (configure ONE concept, like "health-service"). Roles compose profiles to describe a whole machine type ("app_server" = profile::health_service + future profiles). site.pp picks a role for each node. This makes machine roles read like english.
+infra-apply Jenkinsfile
+cat > Jenkinsfile <<'EOF'
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Apply infrastructure with Puppet') {
+      steps {
+        sh '''
+          set -e
+          cd infra/puppet/environments/production
+          sudo /usr/bin/puppet apply --modulepath=modules manifests/site.pp
+        '''
+      }
+    }
+
+    stage('Verify infrastructure') {
+      steps {
+        sh '''
+          set -e
+          test -d /opt/health-service
+          test -f /etc/health-service.env
+          test -f /etc/systemd/system/health-service.service
+          sudo systemctl is-enabled health-service
+          sudo systemctl status health-service --no-pager || true
+          echo "Infrastructure verification completed."
+        '''
+      }
+    }
+  }
+}
+EOF
+
+git add Jenkinsfile infra/puppet
+git commit -m "infra: add Puppet configuration and infra-apply pipeline"
+git push -u origin main
+Sudoers for infra-apply
+sudo visudo -f /etc/sudoers.d/jenkins-infra
+# add exactly:
+# jenkins ALL=(root) NOPASSWD: /usr/bin/puppet, /bin/systemctl, /usr/bin/systemctl
+Create the Jenkins job and run
+# Jenkins UI: New Item → Pipeline → name: infra-apply
+#   Pipeline from SCM → Git → vc-ci-infra URL → credential gitlab-pat
+#   Branch */main, Script Path Jenkinsfile, Save
+# Build Now → green.
+# Verify on VM:
+sudo cat /etc/health-service.env
+sudo systemctl status health-service --no-pager
+Slim down the app pipeline (Deploy stage only does delivery)
+# Edit app repo Jenkinsfile, replace Deploy stage with this minimal version:
+stage('Deploy') {
+  steps {
+    sh '''
+      set -e
+      test -f target/health-service.jar
+      test -d /opt/health-service                         # Puppet owns this
+      test -f /etc/systemd/system/health-service.service  # Puppet owns this
+      sudo cp target/health-service.jar /opt/health-service/app.jar
+      sudo systemctl restart health-service
+      sleep 3
+      curl -fsS http://localhost:8081/health
+    '''
+  }
+}
+What to REMOVE from the app pipeline (now Puppet's job):
+•	tee /etc/health-service.env
+•	mkdir /opt/health-service
+•	the systemd unit creation block
+•	any systemctl daemon-reload (unit doesn't change from the app side)
+Two-pipeline operating logic
+| Scenario                                  | Pipeline to run          | Why                                          |
+| Application code changed                  | app-pipeline             | New jar → restart                            |
+| Puppet code or server config changed      | infra-apply              | New desired state for the VM                 |
+| Fresh VM                                  | infra-apply, THEN app    | Set up the machine, then deploy the jar      |
+| Only env/systemd config changed (no jar)  | infra-apply only         | Puppet restarts service if config changed    |
+💡 Why this separation matters: app code and infra config change at different paces and by different people. Mixing them means an app team's Jenkinsfile contains sysadmin knowledge (paths, sudoers, unit files), and the wrong person can break the machine while shipping a feature. Splitting them lets each pipeline be reviewed and approved by the right team.
+ 
+Last-Minute Cheatsheet
+Recovery & undo decision tree
+•	I edited a file but didn't stage it, and I want to throw it away → git restore <file>.
+•	I staged a file but want to unstage it → git restore --staged <file>.
+•	I made a bad commit that is NOT pushed yet → git reset --mixed HEAD~1 (keeps the changes in your working tree) or --hard (deletes them).
+•	I made a bad commit that IS pushed → git revert <hash>. Never force-push to shared branches.
+•	I committed to the wrong branch → git switch <right-branch>, git cherry-pick <hash>, then git reset --hard <old> on the wrong branch.
+•	I'm on detached HEAD and I made commits → git switch -c rescue-branch immediately.
+•	I've lost a commit completely → git reflog, find the SHA, git switch -c rescue <sha>.
+Merge vs rebase — one-line rules
+•	Rebase your own feature branch BEFORE merging into main (clean linear history).
+•	Never rebase main. Never rebase a branch someone else is working on.
+•	After a rebase you must push with --force-with-lease (not --force).
+•	Merge is always safe but adds merge commits.
+Branch lifecycle (the standard flow)
+5.	git switch main && git pull --ff-only
+6.	git switch -c feature/<topic>
+7.	work → git add → git commit (small clean commits)
+8.	git push -u origin feature/<topic>
+9.	Open MR in GitLab UI
+10.	If main moved: git fetch origin && git rebase origin/main → git push --force-with-lease
+11.	Squash merge via UI, delete source branch
+Tag quick reference
+•	Lightweight: git tag v1.0 — just a name pointing at a commit. No metadata.
+•	Annotated: git tag -a v1.0 -m "message" — has tagger, date, message. Use this for releases.
+•	Tags don't push by default: git push origin v1.0 or git push origin --tags.
+Ranges and history inspection
+•	A..B — commits in B but not A (what did this branch add?)
+•	A...B — commits in either but not both (what's diverged?)
+•	git log --oneline --graph --decorate --all — the view to trust.
+•	git merge-base A B — the common ancestor of two branches.
+•	git log -- <path> — history of a single file.
+•	git show <sha> — full diff of one commit.
+GitLab governance essentials
+•	Protected branches live in Settings → Repository → Protected branches.
+•	MR templates go at .gitlab/merge_request_templates/Default.md and apply to all MRs.
+•	CI config is .gitlab-ci.yml at the repo root. Minimum structure is stages + one job.
+•	Fork workflow: origin = your fork, upstream = the original. Sync by git fetch upstream && git rebase upstream/main on your feature branch.
+
+GitLab CI pipelines — the four triggers you MUST recognize
+•	$CI_PIPELINE_SOURCE == "push"               → ran because someone pushed to a branch
+•	$CI_PIPELINE_SOURCE == "merge_request_event" → ran because an MR exists for that commit
+•	$CI_COMMIT_TAG                              → tag pipeline (set only when ref is a tag)
+•	$CI_COMMIT_BRANCH == "main"                 → push to the default branch specifically
+The first matching rules: entry wins. when: manual makes a job wait for a human click; artifacts: paths: keep files between jobs and as downloadable build output.
+
+Jenkins essentials
+•	Jenkinsfile lives at the repo root. Pipeline → pipeline { agent any; stages { ... } }.
+•	Stages contain steps; steps include sh, checkout scm, archiveArtifacts, junit, sleep, sh '''multiline'''.
+•	options { timeout(time: 10, unit: 'MINUTES') buildDiscarder(logRotator(numToKeepStr: '10')) } caps build time and history.
+•	post { always { ... } success { ... } failure { ... } } runs regardless of/on success of/on failure of the build.
+•	When a build hangs in "Waiting for next available executor": set built-in node executors to 1.
+•	When checkout fails: Branch Specifier is probably */master — change to */main.
+•	Credentials: Manage Jenkins → Credentials. Reference them with the credentials helper or by configuring the SCM block.
+
+Maven essentials
+•	mvn -B clean test package — the one command that does it all in CI (batch mode, wipe target/, compile, run tests, build jar).
+•	<finalName>name</finalName> in pom.xml — stable jar filename (target/name.jar). Without it the version number lands in the filename.
+•	target/surefire-reports/*.xml — JUnit XML reports. Jenkins junit step picks them up.
+•	Lifecycle order through "package": validate → compile → test-compile → test → package.
+
+systemd CD essentials
+•	Unit lives at /etc/systemd/system/<name>.service.
+•	Type=simple, ExecStart=..., EnvironmentFile=-/etc/<name>.env, Restart=always.
+•	After editing a unit file: sudo systemctl daemon-reload, then sudo systemctl restart <name>.
+•	Enable on boot: sudo systemctl enable <name>. Status: sudo systemctl status <name> --no-pager. Logs: sudo journalctl -u <name> -n 100 --no-pager.
+•	Smoke test pattern in CI: code=$(curl -s -o /dev/null -w "%{http_code}" URL); [ "$code" = "200" ].
+
+Puppet essentials
+•	Run a manifest: sudo puppet apply --modulepath=modules manifests/site.pp.
+•	Resources you'll write: package, file, service, exec. Resource title is the identity ('health-service'), attributes describe state (ensure, content, mode).
+•	Ordering: require (I depend on X), before (X depends on me), notify (push refresh), subscribe (pull refresh). refreshonly => true means "only run when notified".
+•	Layout: site.pp picks role(s); roles compose profiles; profiles do ONE concept. Don't put real resources in roles.
+•	Split: app pipeline ships software, infra pipeline (infra-apply) brings the machine to desired state. Two repos, two Jenkinsfiles.
+
+Two-pipeline operating logic (memorize)
+•	App code changed → run app-pipeline
+•	Puppet/infra changed → run infra-apply
+•	Fresh VM → run infra-apply FIRST, then app-pipeline
+•	Only env/unit changed → infra-apply only (Puppet restarts service on its own)
