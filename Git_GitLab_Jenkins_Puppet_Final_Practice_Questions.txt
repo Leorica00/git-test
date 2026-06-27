@@ -1,0 +1,1927 @@
+================================================================
+GIT, GITLAB, JENKINS & PUPPET — FINAL PRACTICE QUESTIONS
+Based on: GitLab CI Pipelines (Refs, Tags, MRs, Quality Gates),
+CI Models (Staged Pipelines, Rules, Manual Gates),
+Jenkins on AWS (Install + Admin + Pipelines),
+Jenkins + Maven CI/CD (Build, JUnit, Archive, systemd Deploy, Smoke Test),
+Puppet Configuration Management (Two-Pipeline Design)
+================================================================
+
+----------------------------------------------------------------
+SECTION 1: GITLAB CI/CD FUNDAMENTALS (.gitlab-ci.yml, refs, tags)
+----------------------------------------------------------------
+
+Q1. What is the exact filename and location required for GitLab CI configuration?
+Single Choice
+A. ci.yml at the repo root
+B. .gitlab-ci.yml at the repo root
+C. .gitlab/ci.yml in any folder
+D. pipeline.yml in the .gitlab/ folder
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q2. What is the required indentation in a .gitlab-ci.yml file?
+Single Choice
+A. Tabs only
+B. 2 spaces, no tabs
+C. 4 spaces, no tabs
+D. Either tabs or spaces, the parser does not care
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q3. Which of the following are true about pipeline stages and jobs in GitLab CI?
+Multiple Select
+A. stages is an ordered list of phases
+B. Jobs in the same stage run in parallel
+C. A later stage starts only after all jobs in the earlier stage pass
+D. A job can belong to multiple stages at once
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q4. In a GitLab CI job, what does the 'script:' key contain?
+Single Choice
+A. A YAML object with environment variables
+B. A list of shell commands to execute in order
+C. A single command as a string
+D. A list of jobs to trigger
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q5. Which predefined CI variable holds the branch OR tag name of the current pipeline?
+Single Choice
+A. $CI_COMMIT_SHA
+B. $CI_COMMIT_REF_NAME
+C. $CI_COMMIT_BRANCH
+D. $CI_JOB_NAME
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q6. Which predefined CI variable holds the full commit hash of the pipeline's commit?
+Single Choice
+A. $CI_COMMIT_REF_NAME
+B. $CI_COMMIT_SHA
+C. $CI_PIPELINE_ID
+D. $CI_PROJECT_ID
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q7. When is $CI_COMMIT_TAG set?
+Single Choice
+A. On every pipeline
+B. Only when the pipeline was triggered by a tag
+C. Only on the default branch
+D. Only inside merge_request_event pipelines
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q8. Which of these are valid values for $CI_PIPELINE_SOURCE?
+Multiple Select
+A. push
+B. merge_request_event
+C. schedule
+D. web
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q9. On a tag pipeline (e.g., for tag v0.7), what does $CI_COMMIT_BRANCH equal?
+Single Choice
+A. The name of the default branch
+B. The name of the branch the tag was created from
+C. It is not set (empty)
+D. v0.7
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q10. A "policy gate" in a GitLab CI pipeline typically refers to:
+Single Choice
+A. A job that requires a paid GitLab tier
+B. A job whose failure represents a violation of a project rule (e.g., grep for required text in README)
+C. A built-in GitLab compliance feature
+D. A job that posts to Slack
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q11. In the lab pipeline, the policy_check job ran 'grep -q "CI_GATE_OK" README.md'. What happens if the line is missing?
+Single Choice
+A. The job prints a warning but stays green
+B. grep exits non-zero, the job fails, and the pipeline turns red
+C. GitLab automatically adds the line for you
+D. The job is skipped
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q12. Tags are preferred over branches for releases because:
+Multiple Select
+A. Tags are immutable refs — once pushed, they always point to the same commit
+B. CI can rebuild the same release reliably from a tag forever
+C. Branches keep moving, so a branch ref is not a stable release marker
+D. Branches cannot trigger pipelines
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q13. Git's history (and therefore GitLab CI) considers a branch a movable pointer while a tag is a fixed pointer.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: A (TRUE)
+
+----------------------------------------------------------------
+
+Q14. The .gitlab-ci.yml file can live in any folder of the repository.
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - it must be at the repository root)
+
+----------------------------------------------------------------
+
+Q15. Which job declaration is the minimal valid GitLab CI pipeline?
+Single Choice
+A. stages: [build] only
+B. stages: [validate] and one job with that stage and a script: list
+C. A job with only a name
+D. A script: at the top level with no stages
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q16. When you create and push an annotated tag v0.7 to GitLab, what happens?
+Single Choice
+A. Nothing — only branch pushes trigger CI
+B. A new pipeline runs whose ref is the tag (v0.7), not a branch
+C. The same pipeline that ran on main is reused
+D. The pipeline runs but uses the master ref
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q17. In the tag pipeline's job log, the line "Pipeline ref name: $CI_COMMIT_REF_NAME" expands to:
+Single Choice
+A. main
+B. master
+C. The tag name (e.g., v0.7)
+D. The pipeline ID
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q18. When a CI job fails, the fastest way to find what failed in the log is to:
+Single Choice
+A. Read the YAML file from top to bottom
+B. Look for the last command line printed by the runner and check its exit code
+C. Re-run the job until it passes
+D. Open the merge request description
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q19. Which of these are TRUE about a GitLab CI job's 'stage:' value?
+Multiple Select
+A. It must reference a stage declared in the top-level stages: list
+B. It controls when the job runs relative to other jobs
+C. Multiple jobs can share the same stage and then run in parallel
+D. A job can omit stage:; it then defaults to 'test'
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q20. Which command pushes a single annotated tag to the remote so its CI pipeline runs?
+Single Choice
+A. git tag --push v0.7
+B. git push origin v0.7
+C. git send-tag v0.7
+D. git commit --tag v0.7
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q21. The line 'grep -q "CI_GATE_OK" README.md' inside a CI job's script: list will:
+Single Choice
+A. Print "CI_GATE_OK" to the log
+B. Quietly succeed (exit 0) if found, fail (exit 1) if not found
+C. Replace the line if missing
+D. Display all matching lines
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q22. Which command makes a job display the list of files in the repo root at runtime?
+Single Choice
+A. cat .
+B. ls -la
+C. find / -type f
+D. git ls-files
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q23. In the lecture's bootstrap pipeline, the typical pair of stages used was:
+Single Choice
+A. build and deploy
+B. validate and policy
+C. lint and merge
+D. test and release
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q24. To "intentionally fail" a CI policy gate as a teaching exercise, you should:
+Single Choice
+A. Delete the .gitlab-ci.yml file
+B. Push a commit that does NOT add the required "CI_GATE_OK" line to README.md
+C. Disable the runner
+D. Force-push to main
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q25. After satisfying the policy gate (adding "CI_GATE_OK" to README), the recommended next step is:
+Single Choice
+A. Force push to main
+B. Squash-merge the MR and delete the source branch
+C. Delete the tag
+D. Revert the commit
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 2: CI MODELS, RULES, AND TRIGGERS (MR vs Branch vs Tag, Manual Gates, Artifacts)
+----------------------------------------------------------------
+
+Q26. Which keyword in modern .gitlab-ci.yml controls WHEN a job runs?
+Single Choice
+A. only:/except:
+B. when:/if:
+C. rules:
+D. trigger:
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q27. How are rules: evaluated in GitLab CI?
+Single Choice
+A. All rules are AND-ed together
+B. Top-down; the FIRST matching rule wins
+C. Bottom-up; the LAST matching rule wins
+D. Rules are evaluated randomly
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q28. Which keys can appear inside a single rules: entry?
+Multiple Select
+A. if:
+B. when:
+C. changes:
+D. exists:
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q29. Which of these are valid 'when:' values?
+Multiple Select
+A. always
+B. manual
+C. never
+D. on_success
+E. on_failure
+
+Answer: A, B, C, D, E
+
+----------------------------------------------------------------
+
+Q30. To run a job ONLY on merge request pipelines, the rule is:
+Single Choice
+A. rules: - if: $CI_COMMIT_BRANCH == "main"
+B. rules: - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+C. rules: - if: $CI_COMMIT_TAG
+D. rules: - when: manual
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q31. To run a job ONLY on tag pipelines, the rule is:
+Single Choice
+A. rules: - if: $CI_PIPELINE_SOURCE == "tag"
+B. rules: - if: $CI_COMMIT_TAG
+C. rules: - only: tags
+D. rules: - if: $CI_COMMIT_REF_NAME =~ /^v/
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q32. To run a job ONLY when pushing to the default branch (main), the rule is:
+Single Choice
+A. rules: - if: $CI_COMMIT_BRANCH == "main"
+B. rules: - if: $CI_DEFAULT_BRANCH
+C. rules: - only: main
+D. rules: - if: $CI_PIPELINE_SOURCE == "main"
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q33. What does 'when: manual' do to a job?
+Single Choice
+A. Skips the job entirely
+B. Makes the job require a human click in the GitLab UI before it runs
+C. Makes the job run only when triggered by an API call
+D. Causes the job to always fail until manually edited
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q34. What is the purpose of the 'artifacts:' block in a job?
+Single Choice
+A. To declare which Docker image the job uses
+B. To declare files (or globs) to keep after the job finishes — downloadable and available to later jobs
+C. To store credentials
+D. To pin the runner version
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q35. Which of these are TRUE about job artifacts?
+Multiple Select
+A. They are downloadable from the job's page in the GitLab UI
+B. They are available to jobs in LATER stages of the same pipeline
+C. They are kept for the project's artifact retention period
+D. They are automatically pushed to Git
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q36. Which three CI models did the lab teach you to implement in one pipeline?
+Multiple Select
+A. MR validation pipeline (runs on merge requests)
+B. Branch push pipeline (runs on branch push)
+C. Tag/release pipeline (runs only on tags)
+D. Cron pipeline (runs only at midnight)
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q37. The staged design "fast checks first, slow later" typically uses which stage order?
+Single Choice
+A. release → slow → fast
+B. fast → slow → release
+C. slow → fast → release
+D. There is no required order
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q38. Why are slow checks (integration, security) put behind 'merge_request_event' instead of every branch push?
+Single Choice
+A. They only work on MRs technically
+B. Running them on every push wastes CI minutes; MRs are the human review gate
+C. GitLab requires it
+D. They cannot read branch refs
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q39. A manual gate ('when: manual') in a release stage protects you from:
+Single Choice
+A. Pipeline timeouts
+B. Automated release of an untested artifact — a human must consciously click "promote"
+C. Branch protection
+D. Storage limits
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q40. After pushing a tag v0.8, which jobs from the lab's staged pipeline ran AUTOMATICALLY?
+Single Choice
+A. lint_fast, unit_fast, integration_slow, package_release
+B. lint_fast, unit_fast, package_release (integration_slow is MR-only)
+C. Only promote_manual
+D. None — tag pipelines do not auto-run
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q41. On a tag pipeline, promote_manual (when: manual, rule: $CI_COMMIT_TAG) appears how?
+Single Choice
+A. Runs automatically
+B. Skipped silently
+C. Waits for a human to click "Play" in the GitLab UI before running
+D. Is marked as failed
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q42. After a regular branch push (no MR yet) to a non-default branch, which jobs run in the lab's staged pipeline?
+Single Choice
+A. All of them
+B. Only lint_fast and unit_fast (because integration_slow needs an MR and release jobs need a tag)
+C. Only the release jobs
+D. None
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q43. To explicitly prevent a job from running on tag pipelines, you would use:
+Single Choice
+A. when: never inside the job
+B. A rules: entry with 'if: $CI_COMMIT_TAG, when: never' before other rules
+C. Delete the job before tagging
+D. There is no way
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q44. Which of these statements about 'rules:' vs the legacy 'only:/except:' are TRUE?
+Multiple Select
+A. rules: is the modern, recommended syntax
+B. only:/except: still work but are considered legacy
+C. rules: gives finer control because of multiple criteria per entry
+D. only:/except: support 'when: manual' natively
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q45. If NONE of a job's rules: entries match, what happens?
+Single Choice
+A. The job runs with default settings
+B. The pipeline fails
+C. The job is excluded from the pipeline
+D. The job runs but with allow_failure: true
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q46. The artifact out/version.txt from a tag pipeline's package_release job typically contains:
+Single Choice
+A. The current branch name
+B. The tag name (e.g., v0.8) written by 'echo "$CI_COMMIT_TAG" > out/version.txt'
+C. The commit SHA only
+D. A timestamp only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q47. 'artifacts: paths:' takes a:
+Single Choice
+A. Single filename as a string
+B. List of file paths or globs to keep
+C. A YAML object mapping names to paths
+D. A binary blob
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q48. Running slow security/integration jobs on MRs (and not on every push) is part of the lab's staged-pipeline philosophy because:
+Multiple Select
+A. Fast jobs give devs immediate feedback on every push
+B. Slow jobs gate the MR review moment
+C. Release-only jobs gate the production moment
+D. The runner cannot run slow jobs at all
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q49. In the lab's pipeline, the 'release' stage contains:
+Multiple Select
+A. package_release (auto on tag)
+B. promote_manual (manual gate on tag)
+C. integration_slow
+D. lint_fast
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q50. A pipeline that uses 'rules:' to skip a job, and 'when: manual' on another, demonstrates which CI principle?
+Single Choice
+A. Idempotent infrastructure
+B. Controlled delivery (run what you need, when you need, with a human gate where it matters)
+C. Branch-only CI
+D. Continuous deployment without review
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 3: JENKINS INSTALLATION AND ADMINISTRATION (AWS Academy + Pipeline Job)
+----------------------------------------------------------------
+
+Q51. What Java version do modern Jenkins releases require?
+Single Choice
+A. Java 8
+B. Java 11
+C. Java 17
+D. Java 21 (or newer)
+
+Answer: D
+
+----------------------------------------------------------------
+
+Q52. Which Ubuntu version is recommended in the AWS Academy lab to avoid repo/Java surprises?
+Single Choice
+A. 20.04 LTS
+B. 22.04 LTS
+C. 24.04
+D. Server edition without LTS
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q53. What is the default port Jenkins listens on after install?
+Single Choice
+A. 80
+B. 443
+C. 8080
+D. 9000
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q54. Where is the initial admin password located after a fresh Jenkins install?
+Single Choice
+A. ~/.jenkins/admin.txt
+B. /var/lib/jenkins/secrets/initialAdminPassword
+C. /etc/jenkins/password
+D. /tmp/jenkins-init.log
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q55. Which security-group inbound rules should be open for the lab?
+Multiple Select
+A. 22/tcp (SSH) from your IP
+B. 8080/tcp (Jenkins) from your IP
+C. 443/tcp from the whole internet
+D. 25/tcp (SMTP) from anywhere
+
+Answer: A, B
+
+----------------------------------------------------------------
+
+Q56. What does the warning "Waiting for next available executor" indicate?
+Single Choice
+A. Jenkins is downloading plugins
+B. The controller has 0 executors, a label doesn't match a node, or no node is online
+C. The disk is full
+D. The build succeeded but is waiting for review
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q57. How do you fix "Waiting for next available executor" in the lab's single-VM setup?
+Single Choice
+A. Reboot the VM
+B. Manage Jenkins → Nodes → built-in node → set "# of executors" to 1
+C. Reinstall Jenkins
+D. Change the JDK version
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q58. Why does Jenkins warn about "/tmp below threshold" on default Ubuntu images?
+Single Choice
+A. /tmp is read-only by default
+B. The default tmpfs /tmp is around ~953 MB and Jenkins wants ≥ 1 GiB
+C. /tmp is owned by root only
+D. Plugins write to /tmp at start
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q59. The fix for the /tmp size warning is:
+Single Choice
+A. mkdir -p /tmp2 and symlink it
+B. Create a systemd drop-in at /etc/systemd/system/tmp.mount.d/override.conf setting Options=...,size=2G
+C. Edit /etc/fstab manually with random options
+D. Disable tmp.mount
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q60. What size of swap is recommended for stability on the small AWS VM?
+Single Choice
+A. 256 MB
+B. 512 MB
+C. 2 GB
+D. 16 GB
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q61. Which commands create and enable a 2 GB swap file?
+Multiple Select
+A. sudo fallocate -l 2G /swapfile
+B. sudo mkswap /swapfile
+C. sudo swapon /swapfile
+D. echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q62. Which plugins should be present after the suggested-plugins install for the lab?
+Multiple Select
+A. Pipeline
+B. Git
+C. Credentials
+D. Active Directory
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q63. Should you mass-update plugins at the start of a lab session?
+True / False
+A. TRUE
+B. FALSE
+
+Answer: B (FALSE - install only what you need; mass-updating during class often breaks things)
+
+----------------------------------------------------------------
+
+Q64. What scope should the GitLab Personal Access Token used by Jenkins have?
+Single Choice
+A. api (full)
+B. read_repository
+C. write_repository
+D. sudo
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q65. In Jenkins, the credential type for a GitLab username + PAT pair is:
+Single Choice
+A. Secret text
+B. Username with password
+C. SSH Username with private key
+D. Certificate
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q66. The recommended credential ID convention in the lab was:
+Single Choice
+A. jenkins-key
+B. gitlab-pat
+C. mr-token
+D. default
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q67. When creating a Pipeline job, what should the "Branch Specifier" be?
+Single Choice
+A. */master
+B. */main
+C. */develop
+D. */any
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q68. The recommended "Pipeline definition" for the lab is:
+Single Choice
+A. Pipeline script (inline in Jenkins)
+B. Pipeline script from SCM
+C. Multibranch Pipeline
+D. Freestyle project
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q69. The Jenkinsfile parameter "Script Path" should be set to:
+Single Choice
+A. /Jenkinsfile
+B. Jenkinsfile
+C. .jenkins/pipeline.groovy
+D. ci/Jenkinsfile
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q70. Where do Jenkins workspaces live on disk by default?
+Single Choice
+A. /home/jenkins/workspace
+B. /var/lib/jenkins/workspace
+C. /opt/jenkins/work
+D. /tmp/jenkins
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q71. The "Discard old builds" / log rotation option in a job is used to:
+Single Choice
+A. Delete the Jenkins binary
+B. Limit how many builds (or how many days of builds) are kept on disk
+C. Speed up builds
+D. Disable the job
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q72. The sudoers "golden rule" the lab insists on is:
+Single Choice
+A. Always give jenkins NOPASSWD: ALL — it's simpler
+B. Never use NOPASSWD: ALL; list the EXACT command paths Jenkins needs
+C. Run Jenkins as root
+D. Disable sudo entirely
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q73. Which command checks Jenkins service logs on systemd?
+Single Choice
+A. cat /var/log/jenkins.log
+B. sudo journalctl -u jenkins -n 120 --no-pager
+C. tail -f /jenkins.log
+D. service jenkins log
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q74. Which Jenkinsfile parsing pitfalls were warned about in the lab?
+Multiple Select
+A. Using # for top-level comments (use // instead)
+B. Leaving a stray 'EOF' or heredoc marker
+C. Branch Specifier still set to */master
+D. Using "stage" instead of "stages"
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q75. To allow only specific deploy commands as sudo for the jenkins user, the lab visudo line was:
+Single Choice
+A. jenkins ALL=(ALL) NOPASSWD: ALL
+B. jenkins ALL=(ALL) NOPASSWD: /usr/bin/tee, /bin/cp, /bin/systemctl restart health-service, /bin/systemctl status health-service
+C. jenkins ALL=(ALL) PASSWD: ALL
+D. jenkins ALL=(jenkins) NOPASSWD: /bin/bash
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 4: JENKINSFILE SYNTAX & PIPELINE STRUCTURE (Declarative Pipeline)
+----------------------------------------------------------------
+
+Q76. Where must the Jenkinsfile live in your repository?
+Single Choice
+A. At /Jenkinsfile (repo root)
+B. In .jenkins/ folder
+C. In ci/ folder
+D. Anywhere, Jenkins will scan recursively
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q77. The Jenkinsfile language is:
+Single Choice
+A. YAML
+B. JSON
+C. Groovy (Declarative Pipeline DSL)
+D. Bash
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q78. Comment syntax INVALID at the top level of a Jenkinsfile is:
+Single Choice
+A. // single-line
+B. /* block */
+C. # hash comment
+D. // multi-line via //
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q79. Which are valid top-level blocks inside 'pipeline { ... }'?
+Multiple Select
+A. agent
+B. options
+C. environment
+D. stages
+E. post
+
+Answer: A, B, C, D, E
+
+----------------------------------------------------------------
+
+Q80. 'agent any' means:
+Single Choice
+A. Run only on the master agent
+B. Run on any available agent (the controller in single-VM lab setups)
+C. Run with anonymous credentials
+D. Skip the build
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q81. The stages { ... } block contains:
+Single Choice
+A. A list of stage('Name') { ... } blocks executed in order
+B. A single command
+C. Environment variables
+D. Plugin configuration
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q82. Each stage('Name') { ... } block contains:
+Single Choice
+A. agent declarations
+B. steps { ... }
+C. options { ... }
+D. environment { ... } only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q83. options { timeout(time: 20, unit: 'MINUTES') } does what?
+Single Choice
+A. Forces the pipeline to take 20 minutes minimum
+B. Kills the build if it runs longer than 20 minutes
+C. Schedules the build for 20 minutes from now
+D. Pauses the pipeline for 20 minutes
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q84. options { buildDiscarder(logRotator(numToKeepStr: '10')) } does what?
+Single Choice
+A. Discards the last 10 builds
+B. Keeps only the last 10 builds (log rotation)
+C. Sends the last 10 logs to email
+D. Disables build history
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q85. The environment { ... } block exposes its vars where?
+Single Choice
+A. Only inside Groovy expressions
+B. As shell environment variables visible inside sh '...' steps
+C. To the Jenkins UI only
+D. To Git only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q86. 'checkout scm' does what?
+Single Choice
+A. Removes the repo from the workspace
+B. Checks out the same repo and branch the Jenkinsfile came from
+C. Checks out only the README
+D. Connects to a remote schema validator
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q87. What does the 'sh' step do?
+Single Choice
+A. Opens a remote SSH session
+B. Runs a shell command in the workspace
+C. Reads a file
+D. Sends a Slack message
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q88. Inside a sh '''...''' multiline block, the recommended first line is:
+Single Choice
+A. echo "starting"
+B. set -e (fail-fast on first error)
+C. cd /
+D. sudo
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q89. The 'junit' step does what?
+Single Choice
+A. Runs JUnit tests
+B. Collects JUnit XML reports matching a glob and renders test trends in the build page
+C. Sends test failures to Slack
+D. Compiles Java tests
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q90. archiveArtifacts artifacts: 'target/*.jar', fingerprint: true does what?
+Single Choice
+A. Compiles the jar
+B. Stores the matching files as downloadable build artifacts and fingerprints them for traceability
+C. Deletes the jar
+D. Pushes the jar to GitLab
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q91. Which post conditions exist in declarative pipelines?
+Multiple Select
+A. always
+B. success
+C. failure
+D. unstable
+E. changed
+
+Answer: A, B, C, D, E
+
+----------------------------------------------------------------
+
+Q92. The 'post { always { ... } }' block runs:
+Single Choice
+A. Only on successful builds
+B. Regardless of the pipeline's outcome
+C. Only on the first build
+D. Only when triggered manually
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q93. Which five stages did the lab's full CI/CD Jenkinsfile use?
+Multiple Select
+A. Checkout
+B. Build & Test (CI)
+C. Publish (or Archive)
+D. Deploy (CD)
+E. Smoke Test
+
+Answer: A, B, C, D, E
+
+----------------------------------------------------------------
+
+Q94. When you read 'sh "echo ${APP_PORT}"' in a Jenkinsfile, the variable APP_PORT is resolved by:
+Single Choice
+A. Bash only
+B. Groovy/Jenkins env (because double quotes allow Groovy interpolation), then the shell sees the resolved value
+C. The Jenkins UI
+D. Git
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q95. 'sleep 2' inside a Deploy stage is typically there to:
+Single Choice
+A. Slow Jenkins down on purpose
+B. Give the service a couple of seconds to fully start before the next stage hits it
+C. Pause until manual approval
+D. Limit CPU
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q96. Which Jenkinsfile mistakes match the lab's "five common parse/runtime errors" list?
+Multiple Select
+A. Branch Specifier set to */master
+B. # comments at the top level
+C. archiveArtifacts path doesn't match what stages produced
+D. sudo commands without exact-path sudoers entries
+E. 0 executors on the controller
+
+Answer: A, B, C, D, E
+
+----------------------------------------------------------------
+
+Q97. The Jenkinsfile env var BRANCH_NAME is set by:
+Single Choice
+A. Manually inside environment { }
+B. The Git/Pipeline plugin during checkout
+C. The runner OS
+D. The user
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q98. The Jenkinsfile 'environment { APP_PORT = "8081" }' makes APP_PORT visible to:
+Single Choice
+A. Only Groovy expressions
+B. Every sh step in the pipeline as an environment variable
+C. Only the Smoke Test stage
+D. The post block only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q99. The smoke-test pattern used in the lab is:
+Single Choice
+A. ping -c 4 localhost
+B. code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${APP_PORT}/health"); [ "$code" = "200" ]
+C. curl http://localhost:8081/health || true
+D. wget -O - http://localhost:8081/health
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q100. If 'archiveArtifacts artifacts: out/**' shows "No artifacts found", the most likely cause is:
+Single Choice
+A. Jenkins is misconfigured globally
+B. The build never produced a file matching the path/glob
+C. The pipeline crashed
+D. The repo has no Jenkinsfile
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 5: MAVEN LIFECYCLE & CI INTEGRATION
+----------------------------------------------------------------
+
+Q101. What does the '-B' flag in 'mvn -B' do?
+Single Choice
+A. Enables debug logging
+B. Batch (non-interactive) mode — no prompts, cleaner CI logs
+C. Builds with multiple threads
+D. Builds only the binary jar
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q102. 'mvn clean' does what?
+Single Choice
+A. Cleans Git history
+B. Deletes the target/ directory so the next build does not pick up old class files
+C. Removes the pom.xml
+D. Cleans the local Maven repository ~/.m2
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q103. Which lifecycle phases run (in order) when you execute 'mvn test'?
+Multiple Select
+A. validate
+B. compile
+C. test-compile
+D. test
+E. package
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q104. 'mvn package' produces (for this lab's Java service):
+Single Choice
+A. A .war file
+B. A .jar file in target/
+C. A native binary in /usr/local/bin
+D. Nothing
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q105. What does '<finalName>health-service</finalName>' inside <build> do?
+Single Choice
+A. Renames the project
+B. Sets the jar filename to target/health-service.jar (without the version suffix)
+C. Sets the Maven groupId
+D. Makes the build faster
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q106. Without <finalName>, the default jar name uses the:
+Single Choice
+A. artifactId only
+B. artifactId + version (e.g., health-service-0.1.0-SNAPSHOT.jar)
+C. groupId only
+D. Just "app.jar"
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q107. Where do JUnit XML reports land after 'mvn test'?
+Single Choice
+A. target/junit/
+B. target/surefire-reports/*.xml
+C. ./surefire/
+D. /var/log/junit/
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q108. What is the difference between openjdk-21-jre and openjdk-21-jdk for building?
+Single Choice
+A. They are the same
+B. The JRE only runs Java; the JDK includes javac (the compiler) — needed to build
+C. The JDK is older
+D. Only the JRE supports Maven
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q109. The JUnit 5 dependency in pom.xml should have what scope?
+Single Choice
+A. compile
+B. provided
+C. test
+D. runtime
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q110. The maven-jar-plugin's <mainClass> setting is used to:
+Single Choice
+A. Set the package version
+B. Write a Main-Class entry into the jar manifest so 'java -jar app.jar' knows what to run
+C. Decide where the jar is built
+D. Run unit tests
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q111. The surefire plugin setting '<useModulePath>false</useModulePath>' is added because:
+Single Choice
+A. Maven is broken
+B. It avoids common module-path issues when running junit-jupiter tests on Java 21
+C. It makes builds faster
+D. It hides test output
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q112. After running 'mvn -B clean test package' you expect to see, among other things, target/ containing:
+Multiple Select
+A. classes/ (compiled main code)
+B. test-classes/ (compiled tests)
+C. surefire-reports/ (JUnit XML)
+D. health-service.jar (if <finalName> is set)
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q113. Replacing 'assertTrue(true)' with a real assertion such as 'assertTrue(msg.contains("Your Name"))' is best described as:
+Single Choice
+A. Cosmetic only
+B. Turning a meaningless placeholder into a meaningful test that actually exercises code
+C. Slower for no benefit
+D. Not allowed by JUnit 5
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q114. The lab's CI Build & Test stage runs the single command:
+Single Choice
+A. mvn install
+B. mvn -B clean test package
+C. mvn verify -X
+D. mvn deploy
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q115. The 'junit' Jenkinsfile step needs which glob to pick up Maven's reports?
+Single Choice
+A. 'target/junit/*.xml'
+B. 'target/surefire-reports/*.xml'
+C. 'reports/*.xml'
+D. '**/junit.xml'
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q116. Running Maven as the jenkins user when debugging on the VM is done with:
+Single Choice
+A. su - root -c 'mvn ...'
+B. sudo -u jenkins -H bash -lc 'mvn -B clean test package'
+C. mvn --user jenkins ...
+D. su jenkins ...
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q117. If Maven's compile step fails with "release version 21 not supported", the likely cause is:
+Single Choice
+A. The pom.xml has the wrong groupId
+B. Only the JRE is installed; openjdk-21-jdk (with javac) is needed
+C. Maven is missing
+D. The repo has no tests
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q118. With <finalName>health-service</finalName> in pom.xml, the archiveArtifacts step targeting 'target/health-service.jar':
+Single Choice
+A. Will fail because Maven adds version
+B. Will reliably find the stable-named jar produced by Maven
+C. Will pick a random jar
+D. Will create the jar
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q119. Why is 'mvn -B clean test package' one command and not three separate commands?
+Single Choice
+A. To save typing only
+B. Because Maven's lifecycle is incremental: invoking package automatically runs everything before it (validate → compile → test-compile → test → package), and 'clean' wipes target/ before that
+C. Because Maven cannot run phases individually
+D. To avoid log spam
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q120. After 'mvn -B clean test package', the file you typically copy to the deploy folder is:
+Single Choice
+A. target/classes
+B. target/health-service.jar (stable name)
+C. ~/.m2/repository/...
+D. src/main/java
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 6: CONTINUOUS DELIVERY WITH systemd (Deploy Stage, Smoke Test)
+----------------------------------------------------------------
+
+Q121. Where do systemd unit files for system-wide services live?
+Single Choice
+A. /opt/systemd/units/
+B. /etc/systemd/system/<name>.service
+C. /var/systemd/
+D. ~/.config/systemd/
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q122. What does 'Type=simple' mean in a systemd unit?
+Single Choice
+A. The service is for system users only
+B. ExecStart starts the main process directly in the foreground; systemd considers the service started once ExecStart is invoked
+C. The service cannot have dependencies
+D. The service auto-stops after one command
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q123. 'ExecStart=/usr/bin/java -jar /opt/health-service/app.jar' specifies:
+Single Choice
+A. The Java compiler path
+B. The exact command systemd runs to start the service
+C. The command run after the service stops
+D. A debug command
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q124. The leading '-' in 'EnvironmentFile=-/etc/health-service.env' means:
+Single Choice
+A. The file must exist
+B. The file is optional — if missing, systemd ignores instead of failing
+C. The path is relative
+D. The file is read in reverse
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q125. 'Restart=always' does what?
+Single Choice
+A. Forces a restart every 5 minutes
+B. Automatically restarts the service whenever it exits, for any reason
+C. Restarts the whole system
+D. Restarts Jenkins
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q126. 'After=network.target' is included in the unit because:
+Single Choice
+A. The service needs network connectivity to be brought up before it starts
+B. The service replaces network.target
+C. systemd requires it for every unit
+D. It runs the service after network is shut down
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q127. 'WantedBy=multi-user.target' under [Install] determines:
+Single Choice
+A. When the service runs
+B. The boot "target" against which the service is enabled (so it auto-starts on normal boot)
+C. The shutdown behavior
+D. The CPU affinity
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q128. When must you run 'sudo systemctl daemon-reload'?
+Single Choice
+A. After every restart
+B. After editing a .service unit file so systemd reloads its definition
+C. Before every status check
+D. Never
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q129. After daemon-reload, you still need to:
+Single Choice
+A. Reboot the VM
+B. Restart (or start) the service to apply the new unit definition
+C. Re-install Java
+D. Re-clone the repo
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q130. Which command makes a service auto-start at boot?
+Single Choice
+A. sudo systemctl enable <name>
+B. sudo systemctl autorun <name>
+C. sudo systemctl start <name>
+D. sudo systemctl boot <name>
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q131. Which command shows the live recent logs of a single service?
+Single Choice
+A. sudo journalctl -u <name> -n 100 --no-pager
+B. tail -f /var/log/<name>.log
+C. cat /etc/<name>.env
+D. dmesg
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q132. The lab's env file lives at:
+Single Choice
+A. /opt/health-service/env
+B. /etc/health-service.env
+C. /var/run/health-service.env
+D. ~/.health-service
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q133. Inside the env file, lines look like:
+Single Choice
+A. export KEY="value"
+B. KEY=value (one per line, no quotes needed for simple values)
+C. KEY: value
+D. <KEY>value</KEY>
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q134. The deploy-stage shell typically does which actions, in order?
+Multiple Select
+A. Write the env file (sudo tee)
+B. Copy the freshly built jar to /opt/health-service/app.jar (sudo cp)
+C. Restart the systemd service (sudo systemctl restart)
+D. Brief sleep so the service has time to boot before the smoke test
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q135. The smoke test asserts the HTTP status code returned by /health is:
+Single Choice
+A. 100
+B. 200
+C. 301
+D. 404
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q136. In 'curl -s -o /dev/null -w "%{http_code}" URL', the meaning of '-w "%{http_code}"' is:
+Single Choice
+A. Wait for HTTP code
+B. Print only the HTTP status code on stdout
+C. Send a webhook
+D. Set the User-Agent
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q137. If the smoke test gets code 000 from curl, the most likely cause is:
+Single Choice
+A. The service was not up in time — increase the sleep or check journalctl for startup errors
+B. The DNS is broken
+C. The service returned 200 too quickly
+D. curl is misinstalled
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q138. The most common reason "Failed to start health-service" appears after a deploy is:
+Multiple Select
+A. /opt/health-service/app.jar is missing
+B. The env file is malformed
+C. Port 8081 is already in use
+D. The system clock is wrong
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q139. The narrow sudoers rule for the lab's deploy stage permits jenkins to run:
+Multiple Select
+A. /usr/bin/tee
+B. /bin/cp
+C. /bin/systemctl restart health-service
+D. /bin/systemctl status health-service
+E. /usr/bin/curl
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q140. The Deploy stage in the app pipeline is intentionally designed to be idempotent and overwriting — every successful build OVERWRITES the env file and jar. This is desirable because:
+Single Choice
+A. It saves disk
+B. The deployed server state always matches what CI built; any hand-edits drift away on the next run
+C. It speeds up deployment
+D. It avoids the smoke test
+
+Answer: B
+
+----------------------------------------------------------------
+
+SECTION 7: CONFIGURATION MANAGEMENT WITH PUPPET (Two-Pipeline Design)
+----------------------------------------------------------------
+
+Q141. Puppet's role in this course is best described as:
+Single Choice
+A. A unit-test framework
+B. A configuration management tool that brings a machine to a declared "desired state"
+C. A Git replacement
+D. A monitoring system
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q142. The command that applies a manifest is:
+Single Choice
+A. puppet run site.pp
+B. sudo puppet apply --modulepath=modules manifests/site.pp
+C. puppet exec site.pp
+D. puppet do --apply
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q143. The lab uses how many separate Git repositories for the two-pipeline design?
+Single Choice
+A. One (vc-ci-app only)
+B. Two (vc-ci-app for the application and vc-ci-infra for Puppet)
+C. Three
+D. Four
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q144. The four Puppet resource types you actually use in the lab are:
+Multiple Select
+A. package
+B. file
+C. service
+D. exec
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q145. Which 'ensure' values are valid on a 'package' resource?
+Multiple Select
+A. installed
+B. present
+C. absent
+D. latest
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q146. Which 'ensure' values are valid on a 'file' resource?
+Multiple Select
+A. file
+B. directory
+C. absent
+D. link
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q147. The role/profile pattern means:
+Multiple Select
+A. site.pp picks roles for machines
+B. Roles compose profiles to describe a machine type
+C. Profiles configure ONE concept each (one service, one stack)
+D. Real resources go directly inside roles
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q148. In the lab, the file 'modules/role/manifests/app_server.pp' typically contains:
+Single Choice
+A. Real Puppet resources directly
+B. Just 'class role::app_server { include profile::health_service }'
+C. The Jenkinsfile
+D. Java code
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q149. The entry point site.pp typically contains:
+Single Choice
+A. include role::app_server
+B. A list of all packages
+C. The systemd unit file
+D. Maven configuration
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q150. 'refreshonly => true' on an exec resource means:
+Single Choice
+A. The exec is skipped if Puppet runs without --refresh
+B. The exec runs ONLY when a subscribed or notifying resource changed
+C. The exec is run on every Puppet apply
+D. The exec runs only on Sundays
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q151. 'subscribe => File[...]' on a resource means:
+Single Choice
+A. Email me when the file changes
+B. If the named file resource changes, refresh me (pull semantics)
+C. I depend on the file before applying
+D. The file becomes read-only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q152. 'notify => Service[...]' on a resource means:
+Single Choice
+A. Send a notification to Slack
+B. If I change, refresh the named service (push semantics; opposite of subscribe)
+C. The service becomes optional
+D. Mark the service unmanaged
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q153. 'require => Package[...]' on a resource means:
+Single Choice
+A. The package must NOT be installed
+B. The named package must be applied BEFORE this resource
+C. This resource will fail if the package is removed in the future
+D. The package is a dependency in apt sense only
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q154. 'before => Service[...]' on a resource means:
+Single Choice
+A. This resource must be applied BEFORE the named service is applied
+B. The service is disabled
+C. Skip the service if this resource exists
+D. Run only before noon
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q155. The "restart-when-config-changes" exec in the lab is guarded by 'onlyif => "/usr/bin/test -f /opt/health-service/app.jar"' because:
+Single Choice
+A. Puppet always runs this exec
+B. There's no point restarting the service if the jar hasn't been deployed yet (app pipeline hasn't run)
+C. To save CPU
+D. To force the jar to exist
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q156. Which repository contains the Jenkinsfile that runs 'puppet apply'?
+Single Choice
+A. vc-ci-app
+B. vc-ci-infra
+C. A shared third repo
+D. The Jenkins server's local disk
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q157. What are the responsibilities of the infra-apply pipeline?
+Multiple Select
+A. Install packages on the VM
+B. Manage /opt/health-service, /etc/health-service.env, the systemd unit
+C. Enable the systemd service
+D. Build the application's jar
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q158. After Puppet owns infrastructure, what should be REMOVED from the app pipeline?
+Multiple Select
+A. mkdir /opt/health-service
+B. tee /etc/health-service.env (writing env from the app pipeline)
+C. Creating the systemd unit file
+D. sudo cp target/health-service.jar /opt/health-service/app.jar
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q159. After Puppet owns infrastructure, what does the app pipeline STILL do?
+Multiple Select
+A. Build, test, package
+B. Copy the new jar to /opt/health-service/app.jar
+C. Restart the systemd service
+D. Smoke test /health
+
+Answer: A, B, C, D
+
+----------------------------------------------------------------
+
+Q160. Application code changed only. Which pipeline do you run?
+Single Choice
+A. infra-apply
+B. app-pipeline
+C. Both
+D. Neither
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q161. Puppet/server config changed only. Which pipeline do you run?
+Single Choice
+A. infra-apply
+B. app-pipeline
+C. Both
+D. Neither
+
+Answer: A
+
+----------------------------------------------------------------
+
+Q162. Fresh VM, nothing on it. What is the correct order?
+Single Choice
+A. app-pipeline only
+B. infra-apply only
+C. infra-apply first, then app-pipeline
+D. app-pipeline first, then infra-apply
+
+Answer: C
+
+----------------------------------------------------------------
+
+Q163. Only the env file value (e.g., STUDENT_NAME) changed in Puppet. After 'infra-apply' runs, what happens to health-service?
+Single Choice
+A. Nothing — the running service still uses the old env
+B. Puppet rewrites the env file and the subscribed exec restarts the service (because env changed and app.jar exists)
+C. The service is uninstalled
+D. The jar is rebuilt
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q164. The sudoers entry that allows jenkins to run puppet and systemctl is:
+Single Choice
+A. jenkins ALL=(ALL) NOPASSWD: ALL
+B. jenkins ALL=(root) NOPASSWD: /usr/bin/puppet, /bin/systemctl, /usr/bin/systemctl
+C. jenkins ALL=(jenkins) NOPASSWD: /usr/bin/puppet
+D. jenkins ALL=(ALL) PASSWD: /usr/bin/puppet
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q165. The infra-apply Jenkinsfile's stages were typically:
+Multiple Select
+A. Checkout
+B. Apply infrastructure with Puppet
+C. Verify infrastructure (test -d, test -f, systemctl is-enabled)
+D. Build Maven jar
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q166. Why split delivery into two pipelines (app + infra) instead of one?
+Multiple Select
+A. App and infra change at different paces and by different people
+B. Mixing them puts sysadmin knowledge inside the app pipeline
+C. Splitting lets each pipeline be reviewed by the right team
+D. To increase the number of repos artificially
+
+Answer: A, B, C
+
+----------------------------------------------------------------
+
+Q167. The 'service { "health-service": enable => true ... }' resource in the lab does NOT include 'ensure => running' because:
+Single Choice
+A. ensure => running is invalid
+B. The lab wants Puppet to enable the service for boot but NOT start it before the app-pipeline drops the jar
+C. systemd does not support running services
+D. It was a typo
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q168. Puppet's two "refresh" relationships are:
+Single Choice
+A. require and before
+B. notify and subscribe
+C. ensure and onlyif
+D. include and define
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q169. Puppet's two pure "ordering" (non-refresh) relationships are:
+Single Choice
+A. notify and subscribe
+B. require and before
+C. ensure and onlyif
+D. include and node
+
+Answer: B
+
+----------------------------------------------------------------
+
+Q170. The two-pipeline operating logic table is best summarized as:
+Single Choice
+A. Always run both pipelines on every change
+B. App code → app-pipeline; Infra/Puppet → infra-apply; Fresh VM → infra-apply first then app-pipeline; Only env/unit change → infra-apply only
+C. Run only app-pipeline; Puppet is optional
+D. Run pipelines in alphabetical order
+
+Answer: B
+
+----------------------------------------------------------------
+
+END OF PRACTICE QUESTIONS (170 Total)
+================================================================
+
+QUICK ANSWER KEY SUMMARY:
+Q1-B | Q2-B | Q3-A,B,C | Q4-B | Q5-B | Q6-B | Q7-B | Q8-A,B,C,D | Q9-C | Q10-B
+Q11-B | Q12-A,B,C | Q13-A | Q14-B | Q15-B | Q16-B | Q17-C | Q18-B | Q19-A,B,C,D | Q20-B
+Q21-B | Q22-B | Q23-B | Q24-B | Q25-B | Q26-C | Q27-B | Q28-A,B,C,D | Q29-A,B,C,D,E | Q30-B
+Q31-B | Q32-A | Q33-B | Q34-B | Q35-A,B,C | Q36-A,B,C | Q37-B | Q38-B | Q39-B | Q40-B
+Q41-C | Q42-B | Q43-B | Q44-A,B,C | Q45-C | Q46-B | Q47-B | Q48-A,B,C | Q49-A,B | Q50-B
+Q51-D | Q52-B | Q53-C | Q54-B | Q55-A,B | Q56-B | Q57-B | Q58-B | Q59-B | Q60-C
+Q61-A,B,C,D | Q62-A,B,C | Q63-B | Q64-B | Q65-B | Q66-B | Q67-B | Q68-B | Q69-B | Q70-B
+Q71-B | Q72-B | Q73-B | Q74-A,B,C,D | Q75-B | Q76-A | Q77-C | Q78-C | Q79-A,B,C,D,E | Q80-B
+Q81-A | Q82-B | Q83-B | Q84-B | Q85-B | Q86-B | Q87-B | Q88-B | Q89-B | Q90-B
+Q91-A,B,C,D,E | Q92-B | Q93-A,B,C,D,E | Q94-B | Q95-B | Q96-A,B,C,D,E | Q97-B | Q98-B | Q99-B | Q100-B
+Q101-B | Q102-B | Q103-A,B,C,D | Q104-B | Q105-B | Q106-B | Q107-B | Q108-B | Q109-C | Q110-B
+Q111-B | Q112-A,B,C,D | Q113-B | Q114-B | Q115-B | Q116-B | Q117-B | Q118-B | Q119-B | Q120-B
+Q121-B | Q122-B | Q123-B | Q124-B | Q125-B | Q126-A | Q127-B | Q128-B | Q129-B | Q130-A
+Q131-A | Q132-B | Q133-B | Q134-A,B,C,D | Q135-B | Q136-B | Q137-A | Q138-A,B,C | Q139-A,B,C,D | Q140-B
+Q141-B | Q142-B | Q143-B | Q144-A,B,C,D | Q145-A,B,C,D | Q146-A,B,C,D | Q147-A,B,C | Q148-B | Q149-A | Q150-B
+Q151-B | Q152-B | Q153-B | Q154-A | Q155-B | Q156-B | Q157-A,B,C | Q158-A,B,C | Q159-A,B,C,D | Q160-B
+Q161-A | Q162-C | Q163-B | Q164-B | Q165-A,B,C | Q166-A,B,C | Q167-B | Q168-B | Q169-B | Q170-B
+
+================================================================
+GOOD LUCK ON YOUR FINAL!
+================================================================
